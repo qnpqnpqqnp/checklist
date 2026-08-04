@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { ThemeProvider, useTheme } from "./theme-context";
-import { ListsProvider } from "./lists-context";
+import { ListsProvider, useLists } from "./lists-context";
 import { ToastProvider } from "./toast-context";
 import PaletteSheet from "./PaletteSheet";
 
@@ -43,6 +43,7 @@ function PlusIcon() {
 
 function Shell({ children }: { children: ReactNode }) {
   const { openPicker } = useTheme();
+  const { loading } = useLists();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -68,7 +69,10 @@ function Shell({ children }: { children: ReactNode }) {
           >
             <GroupIcon />그룹<span className="kbd">3</span>
           </button>
-          <button disabled>
+          <button
+            className={pathname === "/create" ? "on" : ""}
+            onClick={() => router.push("/create")}
+          >
             <PlusIcon />만들기<span className="kbd">N</span>
           </button>
         </div>
@@ -86,6 +90,7 @@ function Shell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="viewport">
+        <div className={`loading${loading ? "" : " off"}`}>불러오는 중…</div>
         <section className="screen on">{children}</section>
       </div>
 
@@ -105,7 +110,10 @@ function Shell({ children }: { children: ReactNode }) {
         >
           <GroupIcon />그룹
         </button>
-        <button disabled>
+        <button
+          className={pathname === "/create" ? "on" : ""}
+          onClick={() => router.push("/create")}
+        >
           <PlusIcon />만들기
         </button>
       </nav>

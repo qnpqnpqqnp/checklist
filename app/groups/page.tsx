@@ -10,7 +10,7 @@ export default function GroupsPage() {
   const shared = lists.filter((l) => l.groupCode);
   const unshared = lists.filter((l) => !l.groupCode);
 
-  function handleShareClick() {
+  async function handleShareClick() {
     if (!unshared.length) {
       showToast("공유할 목록이 없어요");
       return;
@@ -20,8 +20,8 @@ export default function GroupsPage() {
     if (!answer) return;
     const target = unshared[Number(answer) - 1];
     if (!target) return;
-    const code = shareList(target.id);
-    showToast(`초대 코드 ${code}를 만들었어요`);
+    const code = await shareList(target.id);
+    if (code) showToast(`초대 코드 ${code}를 만들었어요`);
   }
 
   function handleNotReady() {

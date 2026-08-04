@@ -1,6 +1,15 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
+import { supabase } from "@/lib/supabase";
+import { getAnonId } from "@/lib/anon-id";
+import { useToast } from "./toast-context";
 
 export type Item = { id: string; text: string; done: boolean };
 export type Period = { name: string; items: Item[] };
@@ -14,74 +23,27 @@ export type ChecklistList = {
   groupCode?: string;
 };
 
-const initialLists: ChecklistList[] = [
-  {
-    id: "l1",
-    title: "자취방 이사 4주 플랜",
-    emoji: "📦",
-    pt: "weekly",
-    periods: [
-      {
-        name: "1주차",
-        items: [
-          { id: "i1", text: "이사 업체 3곳 견적 비교", done: true },
-          { id: "i2", text: "이사 날짜 확정하기", done: true },
-          { id: "i3", text: "집주인에게 퇴거 통보", done: false },
-          { id: "i4", text: "버릴 가구·가전 정리", done: false },
-        ],
-      },
-      {
-        name: "2주차",
-        items: [
-          { id: "i5", text: "인터넷·TV 이전 신청", done: false },
-          { id: "i6", text: "우편물 주소 이전 신청", done: false },
-        ],
-      },
-    ],
-  },
-  {
-    id: "l2",
-    title: "원룸 대청소",
-    emoji: "🧹",
-    pt: "none",
-    periods: [
-      {
-        name: "전체",
-        items: [
-          { id: "i7", text: "옷장 안 옷 전부 꺼내기", done: true },
-          { id: "i8", text: "창틀·방충망 닦기", done: true },
-          { id: "i9", text: "냉장고 안 정리", done: true },
-          { id: "i10", text: "싱크대 배수구 청소", done: false },
-          { id: "i11", text: "화장실 곰팡이 제거", done: false },
-        ],
-      },
-    ],
-  },
-  {
-    id: "l3",
-    title: "오사카 3박 4일 준비",
-    emoji: "🐙",
-    pt: "weekly",
-    groupCode: "8XJ2KQ",
-    periods: [
-      {
-        name: "3주 전",
-        items: [
-          { id: "i12", text: "항공권 예매", done: true },
-          { id: "i13", text: "숙소 예약", done: true },
-          { id: "i14", text: "여권 만료일 확인", done: true },
-        ],
-      },
-      {
-        name: "1주 전",
-        items: [
-          { id: "i15", text: "관광지 티켓 예매", done: false },
-          { id: "i16", text: "엔화 환전", done: false },
-        ],
-      },
-    ],
-  },
-];
+type Row = {
+  id: string;
+  owner_id: string;
+  title: string;
+  emoji: string;
+  pt: ChecklistPeriodType;
+  periods: Period[];
+  group_code: string | null;
+  created_at: string;
+};
+
+function rowToList(row: Row): ChecklistList {
+  return {
+    id: row.id,
+    title: row.title,
+    emoji: row.emoji,
+    pt: row.pt,
+    periods: row.periods,
+    groupCode: row.group_code ?? undefined,
+  };
+}
 
 export function stat(l: ChecklistList): [number, number] {
   let d = 0;
@@ -104,22 +66,160 @@ function code6(): string {
 
 const ListsContext = createContext<{
   lists: ChecklistList[];
-  shareList: (id: string) => string;
+  loading: boolean;
+  createList: (
+    title: string,
+    emoji: string,
+    pt: ChecklistPeriodType,
+    periods: Period[]
+  ) => Promise<ChecklistList | null>;
+  toggleItem: (listId: string, itemId: string) => Promise<void>;
+  addItem: (listId: string, periodIndex: number, text: string) => Promise<void>;
+  deleteItem: (listId: string, itemId: string) => Promise<void>;
+  deleteList: (listId: string) => Promise<void>;
+  shareList: (listId: string) => Promise<string | null>;
 } | null>(null);
 
 export function ListsProvider({ children }: { children: ReactNode }) {
-  const [lists, setLists] = useState<ChecklistList[]>(initialLists);
+  const [lists, setLists] = useState<ChecklistList[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
 
-  const shareList = (id: string) => {
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const ownerId = getAnonId();
+        const { data, error } = await supabase
+          .from("checklists")
+          .select("*")
+          .eq("owner_id", ownerId)
+          .order("created_at", { ascending: false });
+        if (cancelled) return;
+        if (error) {
+          showToast("체크리스트를 불러오지 못했어요");
+        } else if (data) {
+          setLists((data as Row[]).map(rowToList));
+        }
+      } catch {
+        if (!cancelled) showToast("체크리스트를 불러오지 못했어요");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function createList(
+    title: string,
+    emoji: string,
+    pt: ChecklistPeriodType,
+    periods: Period[]
+  ) {
+    const ownerId = getAnonId();
+    const { data, error } = await supabase
+      .from("checklists")
+      .insert({ owner_id: ownerId, title, emoji, pt, periods })
+      .select()
+      .single();
+    if (error || !data) {
+      showToast("체크리스트를 만들지 못했어요");
+      return null;
+    }
+    const created = rowToList(data as Row);
+    setLists((prev) => [created, ...prev]);
+    return created;
+  }
+
+  async function persistPeriods(listId: string, periods: Period[]) {
+    setLists((prev) =>
+      prev.map((l) => (l.id === listId ? { ...l, periods } : l))
+    );
+    const { error } = await supabase
+      .from("checklists")
+      .update({ periods })
+      .eq("id", listId);
+    if (error) showToast("저장에 실패했어요. 잠시 뒤 다시 시도해 주세요");
+  }
+
+  async function toggleItem(listId: string, itemId: string) {
+    const list = lists.find((l) => l.id === listId);
+    if (!list) return;
+    const periods = list.periods.map((p) => ({
+      ...p,
+      items: p.items.map((i) =>
+        i.id === itemId ? { ...i, done: !i.done } : i
+      ),
+    }));
+    await persistPeriods(listId, periods);
+  }
+
+  async function addItem(listId: string, periodIndex: number, text: string) {
+    const list = lists.find((l) => l.id === listId);
+    if (!list) return;
+    const periods = list.periods.map((p, i) =>
+      i === periodIndex
+        ? {
+            ...p,
+            items: [...p.items, { id: crypto.randomUUID(), text, done: false }],
+          }
+        : p
+    );
+    await persistPeriods(listId, periods);
+  }
+
+  async function deleteItem(listId: string, itemId: string) {
+    const list = lists.find((l) => l.id === listId);
+    if (!list) return;
+    const periods = list.periods.map((p) => ({
+      ...p,
+      items: p.items.filter((i) => i.id !== itemId),
+    }));
+    await persistPeriods(listId, periods);
+  }
+
+  async function deleteList(listId: string) {
+    const prev = lists;
+    setLists((cur) => cur.filter((l) => l.id !== listId));
+    const { error } = await supabase.from("checklists").delete().eq("id", listId);
+    if (error) {
+      setLists(prev);
+      showToast("삭제하지 못했어요");
+    }
+  }
+
+  async function shareList(listId: string) {
     const code = code6();
     setLists((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, groupCode: code } : l))
+      prev.map((l) => (l.id === listId ? { ...l, groupCode: code } : l))
     );
+    const { error } = await supabase
+      .from("checklists")
+      .update({ group_code: code })
+      .eq("id", listId);
+    if (error) {
+      showToast("공유 코드 저장에 실패했어요");
+      return null;
+    }
     return code;
-  };
+  }
 
   return (
-    <ListsContext.Provider value={{ lists, shareList }}>
+    <ListsContext.Provider
+      value={{
+        lists,
+        loading,
+        createList,
+        toggleItem,
+        addItem,
+        deleteItem,
+        deleteList,
+        shareList,
+      }}
+    >
       {children}
     </ListsContext.Provider>
   );
