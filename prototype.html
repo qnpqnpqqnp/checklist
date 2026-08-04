@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>체크리스트</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --disp:'Bricolage Grotesque','Pretendard',sans-serif;
+  --sans:'Pretendard','Pretendard Variable',-apple-system,sans-serif;
+  --sh:rgba(19,19,25,.06);--sh2:rgba(19,19,25,.16);--hl:rgba(255,255,255,.85);
+  --press:rgba(19,19,25,.13);--scrim:rgba(19,19,25,.45);--red:#D2564C;
+}
+/* 1 · 안개 — 저채도 인디고 톤온톤 */
+[data-theme="mist"]{--putty:#EDEEF1;--card:#FFF;--ink:#1B1D24;--mute:#7E828F;
+  --violet:#4A5BA8;--lime:#C3CDE8;--line:#DDDFE6;--glow:0 7px 16px rgba(74,91,168,.22);--glow2:0 2px 7px rgba(74,91,168,.18)}
+/* 2 · 흙 — 모래 + 딥그린 */
+[data-theme="earth"]{--putty:#EDE9E2;--card:#FCFAF7;--ink:#23211C;--mute:#84806F;
+  --violet:#39604F;--lime:#CBD9BE;--line:#DED9CF;--glow:0 7px 16px rgba(57,96,79,.22);--glow2:0 2px 7px rgba(57,96,79,.18)}
+/* 3 · 먹 — 모노 + 코발트 한 방울 */
+[data-theme="mono"]{--putty:#F1F1F1;--card:#FFF;--ink:#101012;--mute:#83838A;
+  --violet:#1B45E0;--lime:#DDE4FB;--line:#E2E2E4;--glow:0 7px 16px rgba(27,69,224,.20);--glow2:0 2px 7px rgba(27,69,224,.16)}
+/* 4 · 노을 — 웜 뉴트럴 + 머드 로즈 */
+[data-theme="dusk"]{--putty:#F0EAE7;--card:#FDFAF9;--ink:#241E1E;--mute:#8C7F7C;
+  --violet:#8A5561;--lime:#E7D6D3;--line:#E3DAD6;--glow:0 7px 16px rgba(138,85,97,.20);--glow2:0 2px 7px rgba(138,85,97,.16)}
+/* 5 · 밤 — 다크 */
+[data-theme="night"]{--putty:#141519;--card:#1E2027;--ink:#EDEEF2;--mute:#878A96;
+  --violet:#6675E8;--lime:#3B4360;--line:#2A2D36;--glow:0 7px 18px rgba(102,117,232,.30);--glow2:0 2px 8px rgba(102,117,232,.24);
+  --sh:rgba(0,0,0,.30);--sh2:rgba(0,0,0,.45);--hl:rgba(255,255,255,.06);--press:rgba(0,0,0,.45);--scrim:rgba(0,0,0,.62)}
+[data-theme="night"] .item.done .txt,[data-theme="night"] .gcode b{color:#AEB6E8}
+[data-theme="night"] .gcard{background:#23262F}
+[data-theme="night"] .clay:not(.pale){color:#fff}
+
+/* 팔레트 고르기 */
+.pal{display:grid;grid-template-columns:1fr 1fr;gap:11px;padding:0 22px 8px}
+.palc{border:none;border-radius:20px;padding:15px;cursor:pointer;text-align:left;font-family:var(--sans);background:var(--card);box-shadow:0 5px 14px var(--sh)}
+.palc[aria-pressed="true"]{outline:2.5px solid var(--ink);outline-offset:2px}
+.palc .sw{display:flex;gap:5px;margin-bottom:11px}
+.palc .sw i{width:20px;height:20px;border-radius:7px;box-shadow:inset 0 -2px 4px rgba(0,0,0,.12)}
+.palc h4{font-size:14px;font-weight:800;letter-spacing:-.02em}
+.palc p{font-size:11.5px;color:var(--mute);font-weight:600;margin-top:2px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--sans);color:var(--ink);background:var(--putty);line-height:1.5;display:flex;justify-content:center;min-height:100vh}
+.app{width:100%;max-width:440px;background:var(--putty);min-height:100vh;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.viewport{flex:1;position:relative;overflow:hidden}
+.screen{position:absolute;inset:0;display:none;flex-direction:column}
+.screen.on{display:flex}
+.scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;padding-bottom:34px}
+.scroll::-webkit-scrollbar{width:0}
+
+/* ── 클레이 재질 ── */
+.clay{border-radius:20px;background:var(--violet);color:#fff;border:none;cursor:pointer;
+  box-shadow:inset 0 -5px 9px rgba(0,0,0,.20),inset 0 5px 9px rgba(255,255,255,.26),0 7px 16px var(--glow);
+  transition:transform .12s,box-shadow .12s}
+.clay:active{transform:translateY(2px);box-shadow:inset 0 4px 9px rgba(0,0,0,.26),0 2px 7px var(--glow2)}
+.clay.pale{background:var(--card);color:var(--ink);
+  box-shadow:inset 0 -4px 8px var(--sh),inset 0 4px 8px var(--hl),0 5px 12px var(--sh)}
+
+/* ── 상단 ── */
+.top{flex:none;padding:22px 18px 14px;display:flex;align-items:flex-end;gap:10px}
+.top h1{font-family:var(--disp);font-size:32px;font-weight:800;letter-spacing:-.045em;line-height:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.top .act{margin-left:auto;flex:none;display:flex;gap:7px}
+.back{width:34px;height:34px;border:none;background:none;font-size:22px;cursor:pointer;color:var(--ink);margin-left:-8px;flex:none;line-height:1}
+.mini{border:none;border-radius:12px;background:var(--card);padding:8px 13px;font-family:var(--sans);font-size:12.5px;font-weight:700;cursor:pointer;color:var(--ink);box-shadow:0 3px 8px var(--sh)}
+.mini[aria-pressed="true"]{background:var(--ink);color:#fff}
+.mini.danger{color:var(--red)}
+
+/* ── 벤토 ── */
+.bento{display:grid;grid-template-columns:1fr 1fr;gap:11px;padding:0 18px}
+.tile{border-radius:22px;padding:18px;background:var(--card);box-shadow:0 5px 14px var(--sh);text-align:left;font-family:var(--sans);border:none;cursor:default;min-width:0}
+.s2{grid-column:span 2}
+.label{font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;opacity:.62}
+.huge{font-family:var(--disp);font-weight:800;letter-spacing:-.06em;line-height:.86;margin-top:8px}
+.hero{background:var(--violet);color:#fff;
+  box-shadow:inset 0 -7px 14px rgba(0,0,0,.16),inset 0 7px 14px rgba(255,255,255,.20),0 12px 26px var(--glow)}
+.hero .huge{font-size:84px}
+.hero .huge i{font-size:30px;font-style:normal;letter-spacing:-.02em}
+.hero .sub{margin-top:12px;font-size:12.5px;opacity:.8;font-weight:600}
+.mini-tile .huge{font-size:42px}
+.mini-tile.lime{background:var(--lime)}
+
+/* 목록 카드 */
+.lcard{border-radius:22px;padding:17px;background:var(--card);box-shadow:0 5px 14px var(--sh);text-align:left;font-family:var(--sans);border:none;cursor:pointer;transition:transform .14s,box-shadow .14s;display:flex;flex-direction:column;min-height:132px}
+.lcard:hover{transform:translateY(-3px);box-shadow:0 12px 22px var(--sh2)}
+.lcard .emoji{font-size:24px;line-height:1}
+.lcard h3{font-size:15px;font-weight:700;letter-spacing:-.025em;margin-top:9px;line-height:1.3}
+.lcard .pct{font-family:var(--disp);font-size:30px;font-weight:800;letter-spacing:-.05em;margin-top:auto;line-height:1}
+.lcard .pct i{font-size:13px;font-style:normal}
+.track{height:6px;background:var(--putty);border-radius:99px;margin-top:9px;overflow:hidden}
+.track i{display:block;height:100%;background:var(--violet);border-radius:99px;transition:width .45s cubic-bezier(.4,0,.2,1)}
+.lcard.feat{min-height:0}
+.lcard.feat .pct{margin-top:12px}
+.badge{display:inline-block;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:99px;background:var(--putty);margin-left:6px;vertical-align:2px}
+.badge.grp{background:var(--lime)}
+.badge.hot{background:var(--violet);color:#fff;margin-left:0}
+.badge.up{background:var(--lime);color:var(--ink);margin-left:5px}
+.cardtop{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.usesrow{margin-top:auto;padding-top:10px;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--mute)}
+.uses{color:var(--violet)}
+.dotsep{opacity:.4}
+.statbox{margin:4px 22px 0;background:var(--card);border-radius:22px;padding:18px;box-shadow:0 5px 14px var(--sh)}
+.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.bignum{font-family:var(--disp);font-size:27px;font-weight:800;letter-spacing:-.05em;line-height:1;margin-top:7px}
+.bignum i{font-size:13px;font-style:normal;letter-spacing:0}
+.rankbars{padding-top:15px;display:flex;flex-direction:column;gap:9px}
+.rb{display:flex;align-items:center;gap:9px;font-size:11.5px;font-weight:700;color:var(--mute)}
+.rb.me{color:var(--ink)}
+.rbn{width:38%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:none}
+.rbt{flex:1;height:8px;background:var(--putty);border-radius:99px;overflow:hidden}
+.rbt i{display:block;height:100%;background:var(--line);border-radius:99px}
+.rb.me .rbt i{background:var(--violet)}
+.rbv{width:44px;text-align:right;flex:none;font-family:var(--disp);font-weight:700}
+
+/* 검색·칩 */
+.search{margin:0 18px 12px;display:flex;align-items:center;gap:9px;background:var(--card);border-radius:16px;padding:13px 15px;box-shadow:0 4px 10px var(--sh)}
+.search input{border:none;outline:none;font-family:var(--sans);font-size:14.5px;width:100%;background:none;color:var(--ink)}
+.chips{display:flex;gap:7px;overflow-x:auto;padding:0 18px 14px;flex:none}
+.chips::-webkit-scrollbar{height:0}
+.chip{flex:none;border:none;background:var(--card);border-radius:99px;padding:8px 15px;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;color:var(--ink);box-shadow:0 3px 8px var(--sh)}
+.chip[aria-pressed="true"]{background:var(--ink);color:#fff}
+
+/* ── 상세: 헤더 ── */
+.dhead{padding:0 18px 16px;flex:none}
+.dhead .huge{font-size:76px;display:flex;align-items:baseline;gap:2px}
+.dhead .huge i{font-size:26px;font-style:normal}
+.dhead .track{height:8px;margin-top:14px}
+.dhead .cnt{font-size:12.5px;font-weight:700;color:var(--mute);margin-top:9px}
+.wtabs{display:flex;gap:7px;overflow-x:auto;padding:0 18px 14px;flex:none}
+.wtabs::-webkit-scrollbar{height:0}
+.wt{flex:none;border:none;background:var(--card);border-radius:99px;padding:8px 14px;font-family:var(--sans);font-size:12.5px;font-weight:700;cursor:pointer;color:var(--mute);box-shadow:0 3px 8px var(--sh)}
+.wt[aria-pressed="true"]{background:var(--ink);color:#fff}
+.wt .dot{display:inline-block;width:5px;height:5px;border-radius:99px;background:var(--red);margin-left:6px;vertical-align:middle}
+.wt.add{color:var(--violet);background:transparent;box-shadow:none}
+
+/* ── 항목: 시그니처 ── */
+.items{padding:0 18px;display:flex;flex-direction:column;gap:9px}
+.item{display:flex;gap:13px;align-items:center;padding:15px 16px;border:none;border-radius:18px;cursor:pointer;text-align:left;font-family:var(--sans);width:100%;
+  background:var(--card);box-shadow:0 5px 13px var(--sh);
+  transition:background .3s,box-shadow .35s cubic-bezier(.4,0,.2,1),transform .18s}
+.item.done{background:transparent;box-shadow:inset 0 3px 7px var(--press),inset 0 -1px 2px var(--hl)}
+.item:active{transform:scale(.985)}
+.box{width:26px;height:26px;flex:none;border-radius:9px;display:grid;place-items:center;background:var(--putty);
+  box-shadow:inset 0 -3px 5px rgba(0,0,0,.09),inset 0 3px 5px var(--hl);transition:background .25s,box-shadow .25s}
+.item.done .box{background:var(--lime);box-shadow:inset 0 3px 6px rgba(0,0,0,.20)}
+.box svg{width:15px;height:15px;stroke:var(--ink);stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:22;stroke-dashoffset:22;transition:stroke-dashoffset .3s ease .06s}
+.item.done .box svg{stroke-dashoffset:0}
+.item .txt{font-size:14.5px;font-weight:600;line-height:1.4;word-break:break-word;transition:color .3s,opacity .3s}
+.item.done .txt{color:var(--mute);text-decoration:line-through;text-decoration-thickness:1.5px;opacity:.75}
+.item .who{margin-left:auto;flex:none;font-size:10.5px;font-weight:700;color:var(--mute);background:var(--putty);border-radius:99px;padding:3px 9px}
+.item.done .who{background:var(--hl)}
+.del{margin-left:auto;flex:none;border:none;background:none;color:var(--red);font-size:19px;cursor:pointer;padding:0 3px;line-height:1}
+
+.addrow{display:flex;gap:9px;padding:13px 18px 18px;flex:none;background:linear-gradient(transparent,var(--putty) 22%)}
+.addrow input{flex:1;border:none;border-radius:16px;padding:14px 15px;font-family:var(--sans);font-size:14.5px;font-weight:600;outline:none;background:var(--card);color:var(--ink);min-width:0;box-shadow:0 4px 11px var(--sh)}
+.addrow .clay{padding:0 20px;font-family:var(--sans);font-size:14px;font-weight:800;border-radius:16px}
+
+/* 폼 */
+.form{padding:0 18px;display:flex;flex-direction:column;gap:17px}
+.field label{display:block;font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:8px}
+.field input,.field select{width:100%;border:none;border-radius:16px;padding:14px 15px;font-family:var(--sans);font-size:14.5px;font-weight:600;background:var(--card);color:var(--ink);outline:none;box-shadow:0 4px 11px var(--sh)}
+.field input:focus,.field select:focus{box-shadow:0 0 0 2.5px var(--violet)}
+.seg{display:flex;gap:7px}
+.seg button{flex:1;border:none;background:var(--card);border-radius:15px;padding:13px 6px;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;color:var(--mute);box-shadow:0 4px 10px var(--sh)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.emojirow{display:flex;gap:7px;flex-wrap:wrap}
+.emojirow button{width:44px;height:44px;border:none;background:var(--card);border-radius:15px;font-size:19px;cursor:pointer;box-shadow:0 4px 10px var(--sh)}
+.emojirow button[aria-pressed="true"]{background:var(--lime)}
+.btn{width:100%;padding:17px;font-family:var(--sans);font-size:15px;font-weight:800;border-radius:20px}
+.btn.pale{background:var(--card)}
+.note{font-size:12.5px;color:var(--mute);line-height:1.6;padding:2px 4px}
+.note b{color:var(--ink)}
+
+/* 그룹 */
+.gcard{margin:0 18px 12px;border-radius:24px;padding:20px;background:var(--ink);color:#fff;
+  box-shadow:inset 0 -6px 12px rgba(0,0,0,.35),inset 0 6px 12px rgba(255,255,255,.10),0 10px 22px var(--sh2)}
+.gcard h3{font-size:19px;font-weight:800;letter-spacing:-.03em}
+.gcode{margin-top:15px;padding-top:14px;border-top:1px solid rgba(255,255,255,.18);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.gcode b{font-family:var(--disp);font-size:24px;font-weight:800;letter-spacing:.1em;color:var(--lime)}
+.gcode .lb{font-size:10.5px;font-weight:800;letter-spacing:.14em;opacity:.6;text-transform:uppercase}
+.copy{border:none;background:rgba(255,255,255,.15);color:#fff;border-radius:12px;padding:8px 13px;font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer}
+.grow{display:flex;gap:8px;padding:0 18px 18px}
+.empty{padding:38px 26px;text-align:center;color:var(--mute);font-size:14px}
+.empty b{display:block;color:var(--ink);font-size:17px;font-weight:800;letter-spacing:-.02em;margin-bottom:7px}
+
+/* 시트 */
+.sbg{position:absolute;inset:0;background:var(--scrim);opacity:0;pointer-events:none;transition:.25s;z-index:20}
+.sbg.on{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;height:84%;background:var(--putty);border-radius:30px 30px 0 0;transform:translateY(101%);transition:transform .32s cubic-bezier(.32,.72,0,1);z-index:21;display:flex;flex-direction:column;box-shadow:0 -14px 34px var(--sh2)}
+.sheet.on{transform:translateY(0)}
+.handle{width:42px;height:5px;background:var(--line);border-radius:99px;margin:11px auto 2px;flex:none}
+.shead{padding:12px 22px 18px;flex:none}
+.shead h3{font-family:var(--disp);font-size:27px;font-weight:800;letter-spacing:-.04em;margin:9px 0 7px;line-height:1.1}
+.shead p{font-size:13.5px;color:var(--mute);font-weight:500}
+.sstat{display:flex;gap:8px;margin-top:14px}
+.sstat span{background:var(--card);border-radius:99px;padding:6px 13px;font-size:12px;font-weight:700}
+.wkb{padding:16px 22px 0}
+.wkl{font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--violet);margin-bottom:10px}
+.pv{display:flex;gap:10px;align-items:center;font-size:13.5px;font-weight:600;padding:7px 0}
+.pv::before{content:'';width:16px;height:16px;border-radius:6px;background:var(--card);flex:none;box-shadow:inset 0 -2px 4px rgba(0,0,0,.07)}
+.sfoot{flex:none;padding:14px 18px 20px}
+
+/* 네비 */
+.nav{flex:none;display:flex;gap:4px;padding:9px 14px calc(16px + env(safe-area-inset-bottom));background:var(--putty)}
+.nav button{flex:1;border:none;background:none;padding:8px 0;cursor:pointer;font-family:var(--sans);font-size:10.5px;font-weight:700;color:var(--mute);display:flex;flex-direction:column;align-items:center;gap:5px;border-radius:16px}
+.nav button svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.nav button.on{color:#fff;background:var(--violet);box-shadow:inset 0 -4px 8px rgba(0,0,0,.18),0 6px 14px var(--glow)}
+.toast{position:fixed;left:50%;transform:translate(-50%,16px);bottom:96px;max-width:400px;width:calc(100% - 36px);background:var(--ink);color:#fff;border-radius:18px;padding:15px 17px;font-size:13.5px;font-weight:700;z-index:40;opacity:0;pointer-events:none;transition:.25s;box-shadow:0 10px 26px var(--sh2)}
+.toast.on{transform:translate(-50%,0);opacity:1}
+.loading{position:absolute;inset:0;display:grid;place-items:center;background:var(--putty);z-index:50;font-size:13px;font-weight:700;color:var(--mute)}
+.loading.off{display:none}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+:focus-visible{outline:3px solid var(--violet);outline-offset:3px}
+
+
+/* ══════ 태블릿 (760~1099) ══════ */
+@media(min-width:760px) and (max-width:1099px){
+ body{padding:0}
+ .app{max-width:960px;height:100vh;overflow:hidden;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+ .top{padding:30px 28px 18px}
+ .top h1{font-size:36px}
+ .search{margin:0 28px 14px;max-width:480px;padding:15px 17px}
+ .chips{padding:0 28px 18px}
+ .chip{padding:10px 17px;font-size:13.5px}
+ .bento{grid-template-columns:repeat(3,1fr);gap:13px;padding:0 28px}
+ .tile.hero{grid-column:span 2}
+ .tile.hero .huge{font-size:92px}
+ .lcard{min-height:150px}
+ .lcard.feat{grid-column:span 2}
+ .dhead,.wtabs,.items,#extra{max-width:760px;padding-left:28px;padding-right:28px}
+ .items{padding:0 28px}
+ .addrow{max-width:788px;padding:16px 28px 22px}
+ .form{max-width:540px;padding:0 28px}
+ .grpwrap{padding:0 28px;max-width:760px}
+ /* 터치 타깃 키우기 */
+ .item{padding:18px 20px}
+ .item .txt{font-size:15.5px}
+ .box{width:30px;height:30px;border-radius:11px}
+ .box svg{width:17px;height:17px}
+ .wt{padding:11px 17px;font-size:13.5px}
+ .mini{padding:11px 16px;font-size:13.5px}
+ .nav button{padding:12px 0 18px;font-size:11.5px}
+ .nav button svg{width:24px;height:24px}
+ .addrow input{padding:16px 17px;font-size:15.5px}
+ /* 시트 → 가운데 모달 */
+ .sbg{position:fixed;z-index:60}
+ .sheet{position:fixed;left:50%;top:50%;right:auto;bottom:auto;z-index:61;
+   width:min(620px,90vw);height:min(760px,84vh);border-radius:28px;
+   transform:translate(-50%,-46%) scale(.97);opacity:0;transition:transform .28s cubic-bezier(.32,.72,0,1),opacity .2s}
+ .sheet.on{transform:translate(-50%,-50%) scale(1);opacity:1}
+ .handle{display:none}
+ .shead{padding-top:26px}
+}
+
+/* ══════ 데스크톱 ══════ */
+.rail{display:none}
+.kbd{font-family:var(--disp);font-size:10.5px;font-weight:700;background:var(--putty);border-radius:6px;padding:2px 6px;color:var(--mute);margin-left:auto}
+@media(min-width:1100px){
+ body{padding:0}
+ .app{max-width:1320px;display:grid;grid-template-columns:264px 1fr;height:100vh;overflow:hidden}
+ .nav{display:none}
+ .rail{display:flex;flex-direction:column;gap:6px;padding:24px 16px;border-right:1px solid var(--line);overflow-y:auto}
+ .brand{font-family:var(--disp);font-size:19px;font-weight:800;letter-spacing:-.04em;padding:2px 10px 18px;display:flex;align-items:center;gap:8px}
+ .brand span{width:22px;height:22px;border-radius:8px;background:var(--violet);color:#fff;display:grid;place-items:center;font-size:13px}
+ .rnav{display:flex;flex-direction:column;gap:3px}
+ .rnav button{display:flex;align-items:center;gap:11px;border:none;background:none;padding:11px 12px;border-radius:13px;cursor:pointer;
+   font-family:var(--sans);font-size:14px;font-weight:700;color:var(--mute);text-align:left;width:100%}
+ .rnav button svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+ .rnav button:hover{background:var(--card);color:var(--ink)}
+ .rnav button.on{background:var(--violet);color:#fff;box-shadow:inset 0 -4px 8px rgba(0,0,0,.16),var(--glow)}
+ .rnav button.on .kbd{background:rgba(255,255,255,.2);color:#fff}
+ .rlabel{font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);padding:22px 12px 9px}
+ .rlist{display:flex;flex-direction:column;gap:3px}
+ .rlist button{display:flex;align-items:center;gap:9px;border:none;background:none;padding:9px 12px;border-radius:12px;cursor:pointer;
+   font-family:var(--sans);font-size:13.5px;font-weight:600;color:var(--ink);text-align:left;width:100%}
+ .rlist button:hover{background:var(--card)}
+ .rlist button.on{background:var(--card);box-shadow:0 3px 9px var(--sh)}
+ .rlist .rp{margin-left:auto;font-family:var(--disp);font-size:11.5px;font-weight:700;color:var(--mute);flex:none}
+ .rlist .rt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .railfoot{margin-top:auto;padding-top:20px}
+ .railfoot .mini{width:100%;text-align:left;padding:11px 13px;font-size:13px}
+
+ .viewport{overflow:hidden}
+ .scroll{padding-bottom:56px}
+ .top{padding:30px 32px 20px}
+ .top h1{font-size:38px}
+ .search{margin:0 32px 14px;max-width:520px}
+ .chips{padding:0 32px 18px}
+ .bento{grid-template-columns:repeat(4,1fr);gap:14px;padding:0 32px;max-width:1100px}
+ .s2{grid-column:span 2}
+ .tile.hero{grid-column:span 2;grid-row:span 2;display:flex;flex-direction:column}
+ .tile.hero .huge{font-size:104px;margin-top:auto}
+ .lcard{min-height:158px}
+ .lcard.feat{grid-column:span 2}
+
+ .dhead,.wtabs,.items,.addrow,#extra{max-width:800px}
+ .dhead,.wtabs{padding-left:32px;padding-right:32px}
+ .items{padding:0 32px}
+ .addrow{padding:16px 32px 26px;max-width:832px}
+ .form{max-width:560px;padding:0 32px}
+ .grpwrap{padding:0 32px;max-width:800px}
+ .item{padding:16px 18px}
+ .item .txt{font-size:15px}
+
+ /* 시트 → 가운데 모달 */
+ .sbg{position:fixed;z-index:60}
+ .sheet{position:fixed;left:50%;top:50%;right:auto;bottom:auto;z-index:61;
+   width:min(660px,92vw);height:min(780px,86vh);border-radius:28px;
+   transform:translate(-50%,-46%) scale(.97);opacity:0;transition:transform .28s cubic-bezier(.32,.72,0,1),opacity .2s}
+ .sheet.on{transform:translate(-50%,-50%) scale(1);opacity:1}
+ .handle{display:none}
+ .shead{padding-top:26px}
+ .statgrid{gap:14px}
+}
+@media(min-width:1400px){
+ .bento{grid-template-columns:repeat(5,1fr);max-width:1240px}
+ .tile.hero{grid-column:span 2}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="rail">
+  <div class="brand"><span>✓</span>체크리스트</div>
+  <div class="rnav" id="rnav">
+    <button class="on" data-s="s-mine" onclick="go('s-mine')"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="2.2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2.2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2.2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2.2"/></svg>홈<span class="kbd">1</span></button>
+    <button data-s="s-home" onclick="go('s-home')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>템플릿<span class="kbd">2</span></button>
+    <button data-s="s-group" onclick="go('s-group')"><svg viewBox="0 0 24 24"><circle cx="9" cy="9" r="3.2"/><path d="M3 19c0-3.3 2.7-5 6-5s6 1.7 6 5M16 6.5a3 3 0 010 5.6M18 19c0-2.4-1-3.9-2.5-4.6"/></svg>그룹<span class="kbd">3</span></button>
+    <button data-s="s-create" onclick="go('s-create')"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>만들기<span class="kbd">N</span></button>
+  </div>
+  <div class="rlabel">내 체크리스트</div>
+  <div class="rlist" id="rlist"></div>
+  <div class="railfoot">
+    <button class="mini" onclick="openPal()">🎨 색 바꾸기</button>
+    <p class="note" style="padding:12px 4px 0;font-size:11.5px"><b>/</b> 검색 · <b>Esc</b> 닫기</p>
+  </div>
+</aside>
+<div class="viewport">
+  <div class="loading" id="loading">불러오는 중…</div>
+
+  <!-- 홈 -->
+  <section class="screen" id="s-mine">
+    <div class="top"><h1>오늘</h1><div class="act"><button class="mini" onclick="openPal()" aria-label="색 바꾸기">🎨 색</button><button class="mini" onclick="go('s-create')">+ 새로</button></div></div>
+    <div class="scroll"><div class="bento" id="home"></div></div>
+  </section>
+
+  <!-- 탐색 -->
+  <section class="screen" id="s-home">
+    <div class="top"><h1>템플릿</h1><div class="act"><button class="mini" id="sortBtn" onclick="toggleSort()">인기순</button><span class="mini" id="tcount"></span></div></div>
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#83838F" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="q" placeholder="이사, 여행, 시험…" aria-label="템플릿 검색">
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="scroll"><div class="bento" id="grid"></div></div>
+  </section>
+
+  <!-- 상세 -->
+  <section class="screen" id="s-detail">
+    <div class="top"><button class="back" onclick="go('s-mine')" aria-label="뒤로">←</button><h1 id="d-title"></h1>
+      <div class="act"><button class="mini" id="editBtn" aria-pressed="false" onclick="toggleEdit()">편집</button></div></div>
+    <div class="dhead">
+      <div class="huge"><span id="d-pct">0</span><i>%</i></div>
+      <div class="track"><i id="d-bar" style="width:0%"></i></div>
+      <div class="cnt"><span id="d-done">0</span>개 완료 · <span id="d-left">0</span>개 남음</div>
+    </div>
+    <div class="wtabs" id="wtabs"></div>
+    <div class="scroll"><div class="items" id="items"></div><div id="extra"></div></div>
+    <div class="addrow">
+      <input id="newItem" placeholder="할 일 추가" onkeydown="if(event.key==='Enter')addItem()">
+      <button class="clay" onclick="addItem()">추가</button>
+    </div>
+  </section>
+
+  <!-- 그룹 -->
+  <section class="screen" id="s-group">
+    <div class="top"><h1>그룹</h1><div class="act"><button class="mini" onclick="joinGroup()">코드로 참여</button></div></div>
+    <div class="scroll" id="grpBody"></div>
+  </section>
+
+  <!-- 만들기 -->
+  <section class="screen" id="s-create">
+    <div class="top"><h1>새로 만들기</h1></div>
+    <div class="scroll">
+      <div class="form">
+        <div class="field"><label for="c1">제목</label><input id="c1" placeholder="예) 첫 자취 준비"></div>
+        <div class="field"><label>아이콘</label><div class="emojirow" id="emojirow"></div></div>
+        <div class="field"><label>기간 나누기</label>
+          <div class="seg" id="seg"><button aria-pressed="true" data-v="none">안 나눔</button><button data-v="weekly">주차별</button><button data-v="daily">일자별</button></div></div>
+        <div class="field" id="periodField" style="display:none"><label for="c3">몇 개로 나눌까요</label><input id="c3" type="number" min="2" max="24" value="4"></div>
+        <button class="clay btn" onclick="createList()">만들기</button>
+        <button class="clay pale btn" onclick="go('s-home')">템플릿에서 가져오기</button>
+        <p class="note">데이터는 이 브라우저 계정에 저장돼요. <b>그룹으로 공유한 목록은 초대 코드를 아는 사람이면 누구나 보고 고칠 수 있어요.</b></p>
+        <button class="clay pale btn" style="color:var(--red)" onclick="resetAll()">전체 데이터 초기화</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 시트 -->
+  <div class="sbg" id="sheetbg" onclick="closeSheet()"></div>
+  <div class="sheet" id="sheet">
+    <div class="handle"></div>
+    <div class="shead">
+      <div style="font-size:34px" id="sh-emoji"></div>
+      <h3 id="sh-title"></h3><p id="sh-desc"></p>
+      <div class="sstat"><span id="sh-n"></span><span id="sh-p"></span></div>
+    </div>
+    <div class="scroll" id="sh-body"></div>
+    <div class="sfoot"><button class="clay btn" onclick="useTemplate()">이 템플릿 사용하기</button></div>
+  </div>
+
+  <!-- 팔레트 시트 -->
+  <div class="sbg" id="palbg" onclick="closePal()"></div>
+  <div class="sheet" id="palsheet" style="height:auto;max-height:88%">
+    <div class="handle"></div>
+    <div class="shead" style="padding-bottom:10px">
+      <h3 style="margin-top:2px">색 고르기</h3>
+      <p>고르면 바로 반영돼요. 언제든 다시 바꿀 수 있어요.</p>
+    </div>
+    <div class="scroll"><div class="pal" id="pal"></div>
+      <p class="note" style="padding:16px 22px 4px">눈이 편한 쪽을 고르세요. 하루에 몇 번씩 여는 앱이라 <b>튀는 색보다 오래 봐도 안 피곤한 색</b>이 맞아요.</p></div>
+    <div class="sfoot"><button class="clay btn" onclick="closePal()">이걸로 할게요</button></div>
+  </div>
+</div>
+
+<nav class="nav" id="nav">
+  <button class="on" data-s="s-mine" onclick="go('s-mine')"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="2.2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2.2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2.2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2.2"/></svg>홈</button>
+  <button data-s="s-home" onclick="go('s-home')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>템플릿</button>
+  <button data-s="s-group" onclick="go('s-group')"><svg viewBox="0 0 24 24"><circle cx="9" cy="9" r="3.2"/><path d="M3 19c0-3.3 2.7-5 6-5s6 1.7 6 5M16 6.5a3 3 0 010 5.6M18 19c0-2.4-1-3.9-2.5-4.6"/></svg>그룹</button>
+  <button data-s="s-create" onclick="go('s-create')"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>만들기</button>
+</nav>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const CATS=['전체','여행','이사','시험·자격증','운동','살림','프로젝트'];
+const T=[
+ {id:1,e:'📦',t:'자취방 이사 4주 플랜',c:'이사',pt:'weekly',d:'퇴거 통보부터 전입신고까지, 놓치면 돈 나가는 것만 모았어요.',
+  w:[['1주차',['이사 업체 3곳 견적 비교','이사 날짜 확정하기','집주인에게 퇴거 통보','버릴 가구·가전 정리']],
+     ['2주차',['인터넷·TV 이전 신청','우편물 주소 이전 신청','안 쓰는 물건 중고로 팔기','이사 박스·뽁뽁이 주문']],
+     ['3주차',['옷장 → 주방 순서로 짐 싸기','귀중품·서류 따로 분리','냉장고 비우기 시작','에어컨 청소 예약']],
+     ['4주차',['전입신고 (이사 후 14일 이내)','도시가스 전출·전입 신청','관리비·공과금 정산','청소 후 열쇠 반납']]]},
+ {id:2,e:'🖥',t:'컴활 1급 2주 완성',c:'시험·자격증',pt:'weekly',d:'실기 위주로 짠 벼락치기용 플랜이에요.',
+  w:[['1주차',['Access 테이블·필드 속성 정리','쿼리 유형별 예제 풀기','폼·보고서 기본 구조 익히기','기출 3회분 DB 파트만']],
+     ['2주차',['Excel 계산작업 함수 정리','피벗·부분합 반복 연습','매크로·차트 서식 훑기','실전 모의고사 2회 타이머 재고']]]},
+ {id:3,e:'🐙',t:'오사카 3박 4일 준비',c:'여행',pt:'weekly',d:'출발 전에 해야 할 것만. 짐 싸기는 따로 있어요.',
+  w:[['3주 전',['항공권 예매','숙소 예약','여권 만료일 확인']],
+     ['1주 전',['관광지 티켓 예매','엔화 환전','포켓와이파이 예약','해외 결제 카드 확인']],
+     ['전날',['교통패스 캡처해두기','현지 유심 개통 방법 확인','충전기·보조배터리 챙기기']]]},
+ {id:4,e:'🏋️',t:'헬스 초보 4주 루틴',c:'운동',pt:'weekly',d:'주 3회 기준. 무게보다 자세부터.',
+  w:[['1주차',['3대 운동 자세 영상 보기','빈 봉으로 스쿼트 폼 잡기','유산소 20분','단백질 섭취량 계산']],
+     ['2주차',['스쿼트 무게 5kg 올리기','데드리프트 폼 점검','유산소 25분']],
+     ['3주차',['벤치프레스 추가','주 3회 다 채우기','체중·둘레 기록']],
+     ['4주차',['3대 중량 측정','다음 4주 계획 짜기']]]},
+ {id:5,e:'🧹',t:'원룸 대청소',c:'살림',pt:'none',d:'반나절이면 끝나는 순서대로.',
+  w:[['전체',['옷장 안 옷 전부 꺼내기','안 입는 옷 분리수거','창틀·방충망 닦기','냉장고 안 정리','싱크대 배수구 청소','화장실 곰팡이 제거','침구 세탁','바닥 물걸레질']]]},
+ {id:6,e:'💻',t:'사이드 프로젝트 6주',c:'프로젝트',pt:'weekly',d:'혼자 만들어서 배포까지 가는 최소 코스.',
+  w:[['1주차',['만들 것 한 줄로 정의','화면 3개만 종이에 그리기','DB 테이블 설계','레포 만들고 배포 연결']],
+     ['2주차',['로그인 붙이기','목록 화면 만들기','더미 데이터 넣기']],
+     ['3주차',['생성·수정·삭제 기능','에러 화면 처리']],
+     ['4주차',['모바일 레이아웃 정리','로딩 상태 넣기']],
+     ['5주차',['실제 데이터로 테스트','버그 목록 만들고 잡기']],
+     ['6주차',['README 작성','배포 후 지인 3명에게 보내기']]]},
+ {id:7,e:'⛺️',t:'캠핑 짐 싸기',c:'여행',pt:'none',d:'빼먹으면 현장에서 사야 하는 것들.',
+  w:[['전체',['텐트·팩·망치','침낭·매트','헤드랜턴 + 여분 건전지','버너·가스 잔량 확인','아이스박스 얼음','쓰레기봉투','상비약']]]},
+ {id:8,e:'🍚',t:'첫 자취 살림 장만',c:'살림',pt:'none',d:'없으면 첫날부터 곤란한 순서로 정렬했어요.',
+  w:[['전체',['이불·베개','수건 5장 이상','전자레인지','밥솥 or 즉석밥','칼·도마·가위','휴지·물티슈','멀티탭','건조대']]]}
+];
+const EMOJI=['📝','📦','✈️','🖥','🏋️','🧹','💻','🎂','🌱','🎯'];
+
+/* ── 사용 통계 (공유 저장소) ── */
+const WK=(()=>{const t=new Date();t.setHours(0,0,0,0);t.setDate(t.getDate()+3-((t.getDay()+6)%7));
+ const w1=new Date(t.getFullYear(),0,4);
+ return t.getFullYear()+'-W'+String(1+Math.round(((t-w1)/864e5-3+((w1.getDay()+6)%7))/7)).padStart(2,'0')})();
+/* 시연용 기준값. 실제 사용 수가 여기에 더해집니다 */
+const BASE={1:[2412,86],2:[1187,214],3:[5840,163],4:[3260,71],5:[894,22],6:[762,35],7:[1955,58],8:[4103,97]};
+let STATS={};
+async function loadStats(){
+ try{const r=await window.storage.get('tpl_stats_v1',true);STATS=JSON.parse(r.value)}catch(e){STATS=null}
+ if(!STATS||typeof STATS!=='object'){STATS={};for(const k in BASE)STATS[k]={n:BASE[k][0],w:{[WK]:BASE[k][1]}}}
+ T.forEach(t=>{if(!STATS[t.id])STATS[t.id]={n:0,w:{}};if(!STATS[t.id].w)STATS[t.id].w={}})}
+async function bump(id){const s=STATS[id];s.n++;s.w[WK]=(s.w[WK]||0)+1;
+ try{await window.storage.set('tpl_stats_v1',JSON.stringify(STATS),true)}catch(e){}}
+const uses=id=>STATS[id]?.n||0;
+const wkUses=id=>STATS[id]?.w?.[WK]||0;
+const fmt=n=>n.toLocaleString('ko-KR');
+function ranks(){const m={};[...T].sort((a,b)=>uses(b.id)-uses(a.id)).forEach((t,i)=>m[t.id]=i+1);return m}
+function hotId(){const s=[...T].sort((a,b)=>wkUses(b.id)-wkUses(a.id));return wkUses(s[0].id)>0?s[0].id:null}
+function badges(id){const r=ranks()[id],h=hotId();let o='';
+ if(r<=3)o+=`<span class="badge hot">🔥 인기 ${r}위</span>`;
+ if(id===h&&r>1)o+=`<span class="badge up">⚡ 급상승</span>`;
+ return o}
+
+let DB={lists:[],nick:''},curCat='전체',curQ='',curT=null,cur=null,curWeek=0,editMode=false,newEmoji='📝',newPT='none';
+const $=i=>document.getElementById(i);
+const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const stat=l=>{let d=0,t=0;l.periods.forEach(p=>p.items.forEach(i=>{t++;if(i.done)d++}));return[d,t]};
+
+async function load(){try{const r=await window.storage.get('checklist_data');if(r&&r.value)DB=JSON.parse(r.value)}catch(e){}if(!DB.lists)DB.lists=[]}
+async function save(){try{await window.storage.set('checklist_data',JSON.stringify(DB))}catch(e){toast('저장에 실패했어요. 잠시 뒤 다시 시도해 주세요')}}
+
+/* ── 홈 (벤토) ── */
+function renderHome(){
+ const el=document.getElementById('home');
+ let d=0,t=0;DB.lists.forEach(l=>{const[a,b]=stat(l);d+=a;t+=b});
+ const pct=t?Math.round(d/t*100):0;
+ let h=`<div class="tile hero s2"><div class="label">전체 진행률</div>
+   <div class="huge">${pct}<i>%</i></div>
+   <div class="sub">${t?`${d}개 끝냈고 ${t-d}개 남았어요`:'체크리스트를 만들면 여기에 쌓여요'}</div></div>
+  <div class="tile mini-tile"><div class="label">남은 항목</div><div class="huge">${t-d}</div></div>
+  <div class="tile mini-tile lime"><div class="label">목록</div><div class="huge">${DB.lists.length}</div></div>`;
+ if(!DB.lists.length){h+=`<div class="tile s2"><div class="empty" style="padding:22px 6px"><b>아직 비어 있어요</b>템플릿에서 가져오거나 직접 만들어 보세요.</div>
+   <button class="clay btn" onclick="go('s-home')">템플릿 둘러보기</button></div>`}
+ else DB.lists.forEach((l,i)=>{const[a,b]=stat(l),p=b?Math.round(a/b*100):0;
+  h+=`<button class="lcard${i===0?' feat s2':''}" onclick="openList('${l.id}')">
+   <div><span class="emoji">${l.emoji}</span>${l.groupCode?'<span class="badge grp">그룹</span>':l.pt!=='none'?`<span class="badge">${l.periods.length}${l.pt==='daily'?'일':'주'}</span>`:''}</div>
+   <h3>${esc(l.title)}</h3>
+   <div class="pct">${p}<i>%</i></div>
+   <div class="track"><i style="width:${p}%"></i></div></button>`});
+ el.innerHTML=h;renderRail()
+}
+
+/* ── 탐색 ── */
+const chips=document.getElementById('chips');
+CATS.forEach((c,i)=>{const b=document.createElement('button');b.className='chip';b.textContent=c;b.setAttribute('aria-pressed',i===0);
+ b.onclick=()=>{curCat=c;[...chips.children].forEach(x=>x.setAttribute('aria-pressed',x===b));renderGrid()};chips.appendChild(b)});
+document.getElementById('q').oninput=e=>{curQ=e.target.value.trim();renderGrid()};
+let sortBy='hot';
+function toggleSort(){sortBy=sortBy==='hot'?'name':'hot';
+ document.getElementById('sortBtn').textContent=sortBy==='hot'?'인기순':'기본순';renderGrid()}
+function renderGrid(){
+ let l=T.filter(x=>(curCat==='전체'||x.c===curCat)&&(!curQ||x.t.includes(curQ)||x.c.includes(curQ)));
+ if(sortBy==='hot')l=[...l].sort((a,b)=>uses(b.id)-uses(a.id));
+ document.getElementById('tcount').textContent=l.length+'개';
+ document.getElementById('grid').innerHTML=l.map((x,i)=>{const n=x.w.reduce((a,b)=>a+b[1].length,0);
+  return `<button class="lcard${i%5===0?' s2 feat':''}" onclick="openSheet(${x.id})">
+   <div class="cardtop"><span class="emoji">${x.e}</span>${badges(x.id)}</div>
+   <h3>${esc(x.t)}</h3>
+   <div class="usesrow"><span class="uses">${fmt(uses(x.id))}명 사용</span><span class="dotsep">·</span><span>${n}항목</span></div></button>`}).join('')
+  ||`<div class="tile s2"><div class="empty"><b>찾는 템플릿이 없어요</b>직접 만들어서 쓸 수 있어요.</div></div>`;
+}
+function openSheet(id){curT=T.find(x=>x.id===id);
+ const r=ranks()[id],max=Math.max(...T.map(t=>uses(t.id))),n=curT.w.reduce((a,b)=>a+b[1].length,0);
+ $('sh-emoji').innerHTML=curT.e+' '+badges(id);
+ $('sh-title').textContent=curT.t;$('sh-desc').textContent=curT.d;
+ $('sh-n').textContent='항목 '+n+'개';
+ $('sh-p').textContent=curT.pt==='none'?'상시':curT.w.length+'주 구성';
+ $('sh-body').innerHTML=`
+  <div class="statbox">
+    <div class="statgrid">
+      <div><div class="label">누적 사용</div><div class="bignum">${fmt(uses(id))}</div></div>
+      <div><div class="label">이번 주</div><div class="bignum">${fmt(wkUses(id))}</div></div>
+      <div><div class="label">인기 순위</div><div class="bignum">${r}<i>위</i></div></div>
+    </div>
+    <div class="rankbars">
+      ${[...T].sort((a,b)=>uses(b.id)-uses(a.id)).slice(0,5).map(t=>
+        `<div class="rb ${t.id===id?'me':''}"><span class="rbn">${t.e} ${esc(t.t)}</span>
+         <span class="rbt"><i style="width:${Math.round(uses(t.id)/max*100)}%"></i></span>
+         <span class="rbv">${fmt(uses(t.id))}</span></div>`).join('')}
+    </div>
+    <p class="note" style="padding:12px 2px 0">전체 템플릿 중 사용 수 기준 상위 5개예요. 상위 3개에 <b>인기</b>, 이번 주 사용이 가장 많은 하나에 <b>급상승</b>이 붙어요.</p>
+  </div>
+  <div class="wkl" style="padding:22px 22px 0">담긴 항목 ${n}개</div>`
+  +curT.w.map(w=>`<div class="wkb"><div class="wkl">${esc(w[0])}</div>${w[1].map(i=>`<div class="pv">${esc(i)}</div>`).join('')}</div>`).join('')
+  +`<p class="note" style="padding:18px 22px 8px">가져온 뒤에 자유롭게 고칠 수 있어요.</p>`;
+ $('sheet').classList.add('on');$('sheetbg').classList.add('on')}
+function closeSheet(){$('sheet').classList.remove('on');$('sheetbg').classList.remove('on')}
+async function useTemplate(){
+ DB.lists.unshift({id:uid('l'),title:curT.t,emoji:curT.e,cat:curT.c,pt:curT.pt,
+  periods:curT.w.map(w=>({name:w[0],items:w[1].map(x=>({id:uid('i'),text:x,done:false}))}))});
+ await save();await bump(curT.id);closeSheet();renderGrid();renderHome();go('s-mine');toast('내 체크리스트에 담았어요')}
+
+/* ── 상세 ── */
+function openList(id){cur=DB.lists.find(l=>l.id===id);curWeek=0;editMode=false;
+ document.getElementById('editBtn').setAttribute('aria-pressed','false');
+ document.getElementById('extra').innerHTML='';
+ document.getElementById('d-title').textContent=cur.emoji+' '+cur.title;
+ renderTabs();renderItems();renderRail();go('s-detail')}
+function renderTabs(){const el=document.getElementById('wtabs');
+ if(cur.pt==='none'&&cur.periods.length===1&&!editMode){el.innerHTML='';el.style.display='none';return}
+ el.style.display='flex';
+ el.innerHTML=cur.periods.map((p,i)=>{const u=p.items.some(x=>!x.done);
+  return `<button class="wt" aria-pressed="${i===curWeek}" onclick="setWeek(${i})">${esc(p.name)}${u?'<span class="dot"></span>':''}</button>`}).join('')
+  +(editMode?`<button class="wt add" onclick="addPeriod()">+ 기간</button>`:'')}
+function setWeek(i){curWeek=i;renderTabs();renderItems()}
+function renderItems(){const p=cur.periods[curWeek];
+ document.getElementById('items').innerHTML=p.items.map(it=>
+  `<button class="item ${it.done?'done':''}" onclick="${editMode?`delItem('${it.id}')`:`toggle('${it.id}')`}">
+   <span class="box"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg></span>
+   <span class="txt">${esc(it.text)}</span>
+   ${it.who?`<span class="who">${esc(it.who)}</span>`:''}${editMode?'<span class="del">×</span>':''}</button>`).join('')
+  ||`<div class="empty"><b>비어 있어요</b>아래에서 할 일을 추가해 보세요.</div>`;
+ const[d,t]=stat(cur),pc=t?Math.round(d/t*100):0;
+ document.getElementById('d-pct').textContent=pc;
+ document.getElementById('d-done').textContent=d;
+ document.getElementById('d-left').textContent=t-d;
+ document.getElementById('d-bar').style.width=pc+'%'}
+async function toggle(id){for(const p of cur.periods){const it=p.items.find(x=>x.id===id);if(it){it.done=!it.done;break}}
+ renderItems();renderTabs();await save();if(cur.groupCode)pushGroupFor(cur)}
+async function addItem(){const inp=document.getElementById('newItem'),v=inp.value.trim();if(!v)return;
+ cur.periods[curWeek].items.push({id:uid('i'),text:v,done:false,who:cur.groupCode?DB.nick:undefined});
+ inp.value='';renderItems();renderTabs();await save();if(cur.groupCode)pushGroupFor(cur)}
+async function delItem(id){cur.periods[curWeek].items=cur.periods[curWeek].items.filter(x=>x.id!==id);
+ renderItems();renderTabs();await save();if(cur.groupCode)pushGroupFor(cur)}
+async function addPeriod(){const n=prompt('기간 이름',(cur.periods.length+1)+(cur.pt==='daily'?'일차':'주차'));if(!n)return;
+ cur.periods.push({name:n,items:[]});curWeek=cur.periods.length-1;renderTabs();renderItems();await save()}
+function toggleEdit(){editMode=!editMode;
+ document.getElementById('editBtn').setAttribute('aria-pressed',editMode);
+ document.getElementById('extra').innerHTML=editMode
+  ?`<div style="padding:18px"><button class="clay pale btn" style="color:var(--red)" onclick="delList()">이 체크리스트 삭제</button></div>`:'';
+ renderTabs();renderItems()}
+async function delList(){if(!confirm('삭제하면 되돌릴 수 없어요. 삭제할까요?'))return;
+ DB.lists=DB.lists.filter(l=>l.id!==cur.id);await save();editMode=false;
+ document.getElementById('extra').innerHTML='';renderHome();go('s-mine');toast('삭제했어요')}
+
+/* ── 만들기 ── */
+const er=document.getElementById('emojirow');
+EMOJI.forEach((e,i)=>{const b=document.createElement('button');b.textContent=e;b.setAttribute('aria-pressed',i===0);
+ b.onclick=()=>{newEmoji=e;[...er.children].forEach(x=>x.setAttribute('aria-pressed',x===b))};er.appendChild(b)});
+document.querySelectorAll('#seg button').forEach(b=>b.onclick=()=>{newPT=b.dataset.v;
+ document.querySelectorAll('#seg button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+ document.getElementById('periodField').style.display=newPT==='none'?'none':'block'});
+async function createList(){const t=document.getElementById('c1').value.trim();
+ if(!t){toast('제목을 입력해 주세요');return}
+ let periods=[{name:'전체',items:[]}];
+ if(newPT!=='none'){const n=Math.min(24,Math.max(2,+document.getElementById('c3').value||4));
+  periods=Array.from({length:n},(_,i)=>({name:(i+1)+(newPT==='daily'?'일차':'주차'),items:[]}))}
+ const l={id:uid('l'),title:t,emoji:newEmoji,cat:'',pt:newPT,periods};
+ DB.lists.unshift(l);await save();document.getElementById('c1').value='';renderHome();openList(l.id);toast('만들었어요')}
+async function resetAll(){if(!confirm('저장된 체크리스트가 전부 지워져요. 계속할까요?'))return;
+ DB={lists:[],nick:DB.nick};await save();renderHome();renderGroup();toast('초기화했어요')}
+
+/* ── 그룹 ── */
+const code6=()=>{let s='';for(let i=0;i<6;i++)s+='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)];return s};
+function renderGroup(){const sh=DB.lists.filter(l=>l.groupCode);
+ document.getElementById('grpBody').innerHTML=
+  `<div class="grpwrap"><p class="note" style="padding:0 22px 16px">그룹 목록은 <b>초대 코드를 아는 사람이면 누구나</b> 보고 고칠 수 있어요. 민감한 내용은 넣지 마세요.</p>`
+  +(sh.length?sh.map(l=>`<div class="gcard"><h3>${l.emoji} ${esc(l.title)}</h3>
+    <div class="gcode"><span class="lb">초대 코드</span><b>${l.groupCode}</b><button class="copy" onclick="cp('${l.groupCode}')">복사</button></div></div>
+    <div class="grow"><button class="mini" onclick="openList('${l.id}')">열기</button><button class="mini" onclick="pullGroup('${l.groupCode}')">새로고침</button></div>`).join('')
+   :`<div class="empty"><b>공유 중인 목록이 없어요</b>내 체크리스트를 그룹으로 바꾸면 초대 코드가 생겨요.</div>`)
+  +`<div style="padding:0 18px"><button class="clay btn" onclick="shareOne()">내 목록 공유하기</button></div></div>`}
+async function nickCheck(){if(DB.nick)return true;const n=(prompt('그룹에서 쓸 이름')||'').trim();if(!n)return false;DB.nick=n.slice(0,8);await save();return true}
+async function shareOne(){const mine=DB.lists.filter(l=>!l.groupCode);
+ if(!mine.length){toast('공유할 목록이 없어요');return}
+ if(!await nickCheck())return;
+ const p=prompt('공유할 목록 번호\n'+mine.map((l,i)=>`${i+1}. ${l.title}`).join('\n'));const l=mine[+p-1];if(!l)return;
+ l.groupCode=code6();await save();await pushGroupFor(l);renderGroup();renderHome();toast('초대 코드 '+l.groupCode+' 생성')}
+async function pushGroupFor(l){try{await window.storage.set('grp:'+l.groupCode,JSON.stringify({title:l.title,emoji:l.emoji,pt:l.pt,periods:l.periods,at:Date.now()}),true)}catch(e){toast('공유 저장에 실패했어요')}}
+async function pullGroup(code){try{const r=await window.storage.get('grp:'+code,true),d=JSON.parse(r.value);
+ const l=DB.lists.find(x=>x.groupCode===code);
+ if(l){Object.assign(l,{periods:d.periods,title:d.title,emoji:d.emoji,pt:d.pt});await save();renderHome();renderGroup();
+  if(cur&&cur.id===l.id){renderTabs();renderItems()}toast('최신 내용을 받았어요')}}catch(e){toast('해당 코드의 목록을 찾을 수 없어요')}}
+async function joinGroup(){if(!await nickCheck())return;
+ const c=(prompt('초대 코드 6자리')||'').trim().toUpperCase();if(!c)return;
+ if(DB.lists.some(l=>l.groupCode===c)){pullGroup(c);return}
+ try{const r=await window.storage.get('grp:'+c,true),d=JSON.parse(r.value);
+  DB.lists.unshift({id:uid('l'),title:d.title,emoji:d.emoji,cat:'',pt:d.pt,periods:d.periods,groupCode:c});
+  await save();renderHome();renderGroup();toast('그룹에 참여했어요')}catch(e){toast('그런 코드의 그룹이 없어요')}}
+function cp(t){navigator.clipboard?.writeText(t);toast('초대 코드를 복사했어요')}
+
+/* ── 팔레트 ── */
+const PAL=[
+ {k:'mist',n:'안개',d:'저채도 인디고',c:['#EDEEF1','#4A5BA8','#C3CDE8','#1B1D24']},
+ {k:'earth',n:'흙',d:'모래 + 딥그린',c:['#EDE9E2','#39604F','#CBD9BE','#23211C']},
+ {k:'mono',n:'먹',d:'무채색 + 코발트',c:['#F1F1F1','#1B45E0','#DDE4FB','#101012']},
+ {k:'dusk',n:'노을',d:'웜 뉴트럴 + 로즈',c:['#F0EAE7','#8A5561','#E7D6D3','#241E1E']},
+ {k:'night',n:'밤',d:'다크 모드',c:['#141519','#6675E8','#3B4360','#EDEEF2']}
+];
+function applyTheme(k){document.documentElement.setAttribute('data-theme',k);
+ document.querySelectorAll('#pal .palc').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===k))}
+function renderPal(){document.getElementById('pal').innerHTML=PAL.map(p=>
+ `<button class="palc" data-k="${p.k}" aria-pressed="${DB.theme===p.k}" onclick="pickTheme('${p.k}')">
+   <div class="sw">${p.c.map(c=>`<i style="background:${c}"></i>`).join('')}</div>
+   <h4>${p.n}</h4><p>${p.d}</p></button>`).join('')}
+async function pickTheme(k){DB.theme=k;applyTheme(k);await save()}
+function openPal(){renderPal();$('palsheet').classList.add('on');$('palbg').classList.add('on')}
+function closePal(){$('palsheet').classList.remove('on');$('palbg').classList.remove('on')}
+
+/* ── 사이드바 ── */
+function renderRail(){
+ const el=$('rlist');if(!el)return;
+ el.innerHTML=DB.lists.length?DB.lists.map(l=>{const[a,b]=stat(l),p=b?Math.round(a/b*100):0;
+  return `<button class="${cur&&cur.id===l.id?'on':''}" onclick="openList('${l.id}')">
+   <span>${l.emoji}</span><span class="rt">${esc(l.title)}</span><span class="rp">${p}%</span></button>`}).join('')
+  :`<p class="note" style="padding:4px 12px;font-size:12px">아직 없어요</p>`}
+
+/* ── 키보드 ── */
+document.addEventListener('keydown',e=>{
+ const typing=/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName);
+ if(e.key==='Escape'){closeSheet();closePal();if(typing)document.activeElement.blur();return}
+ if(typing)return;
+ if(e.key==='/'){e.preventDefault();go('s-home');$('q').focus();return}
+ if(e.key==='1')go('s-mine');
+ else if(e.key==='2')go('s-home');
+ else if(e.key==='3')go('s-group');
+ else if(e.key==='n'||e.key==='N'){
+   if($('s-detail').classList.contains('on')){e.preventDefault();$('newItem').focus()}
+   else go('s-create')}
+});
+
+/* ── 공통 ── */
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));
+ const m=id==='s-detail'?'s-mine':id;
+ document.querySelectorAll('#nav button,#rnav button').forEach(b=>b.classList.toggle('on',b.dataset.s===m));
+ if(id==='s-mine')renderHome();if(id==='s-group')renderGroup();renderRail()}
+let tt;function toast(m){const el=document.getElementById('toast');el.textContent=m;el.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('on'),2200)}
+(async()=>{await load();await loadStats();if(!DB.theme)DB.theme='mist';applyTheme(DB.theme);
+ renderPal();renderGrid();renderHome();renderGroup();
+ document.getElementById('loading').classList.add('off');go('s-mine')})();
+</script>
+</body>
+</html>
