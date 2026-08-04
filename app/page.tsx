@@ -1,11 +1,13 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useLists, stat } from "./lists-context";
 import { useTheme } from "./theme-context";
 
 export default function Home() {
   const { lists } = useLists();
   const { openPicker } = useTheme();
+  const router = useRouter();
 
   let d = 0;
   let t = 0;
@@ -67,7 +69,7 @@ export default function Home() {
                 <button
                   key={l.id}
                   className={`lcard${i === 0 ? " feat s2" : ""}`}
-                  disabled
+                  onClick={() => router.push(`/list/${l.id}`)}
                 >
                   <div>
                     <span className="emoji">{l.emoji}</span>

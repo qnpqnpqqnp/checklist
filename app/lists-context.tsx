@@ -75,7 +75,9 @@ const ListsContext = createContext<{
   ) => Promise<ChecklistList | null>;
   toggleItem: (listId: string, itemId: string) => Promise<void>;
   addItem: (listId: string, periodIndex: number, text: string) => Promise<void>;
+  updateItem: (listId: string, itemId: string, text: string) => Promise<void>;
   deleteItem: (listId: string, itemId: string) => Promise<void>;
+  addPeriod: (listId: string, name: string) => Promise<void>;
   deleteList: (listId: string) => Promise<void>;
   shareList: (listId: string) => Promise<string | null>;
 } | null>(null);
@@ -171,6 +173,16 @@ export function ListsProvider({ children }: { children: ReactNode }) {
     await persistPeriods(listId, periods);
   }
 
+  async function updateItem(listId: string, itemId: string, text: string) {
+    const list = lists.find((l) => l.id === listId);
+    if (!list) return;
+    const periods = list.periods.map((p) => ({
+      ...p,
+      items: p.items.map((i) => (i.id === itemId ? { ...i, text } : i)),
+    }));
+    await persistPeriods(listId, periods);
+  }
+
   async function deleteItem(listId: string, itemId: string) {
     const list = lists.find((l) => l.id === listId);
     if (!list) return;
@@ -178,6 +190,13 @@ export function ListsProvider({ children }: { children: ReactNode }) {
       ...p,
       items: p.items.filter((i) => i.id !== itemId),
     }));
+    await persistPeriods(listId, periods);
+  }
+
+  async function addPeriod(listId: string, name: string) {
+    const list = lists.find((l) => l.id === listId);
+    if (!list) return;
+    const periods = [...list.periods, { name, items: [] }];
     await persistPeriods(listId, periods);
   }
 
@@ -215,7 +234,9 @@ export function ListsProvider({ children }: { children: ReactNode }) {
         createList,
         toggleItem,
         addItem,
+        updateItem,
         deleteItem,
+        addPeriod,
         deleteList,
         shareList,
       }}
