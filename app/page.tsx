@@ -5,7 +5,7 @@ import { useTheme } from "./theme-context";
 
 export default function Home() {
   const { lists } = useLists();
-  const { cycleTheme } = useTheme();
+  const { openPicker } = useTheme();
 
   let d = 0;
   let t = 0;
@@ -21,7 +21,7 @@ export default function Home() {
       <div className="top">
         <h1>오늘</h1>
         <div className="act">
-          <button className="mini" onClick={cycleTheme} aria-label="색 바꾸기">
+          <button className="mini" onClick={openPicker} aria-label="색 바꾸기">
             🎨 색
           </button>
           <button className="mini" disabled aria-label="새로 만들기">

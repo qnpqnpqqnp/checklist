@@ -1,26 +1,50 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 
-const THEMES = ["mist", "earth", "mono", "dusk", "night"] as const;
-type Theme = (typeof THEMES)[number];
+type Theme = "mist" | "earth" | "mono" | "dusk" | "night";
 
 const ThemeContext = createContext<{
   theme: Theme;
-  cycleTheme: () => void;
+  setTheme: (t: Theme) => void;
+  isPickerOpen: boolean;
+  openPicker: () => void;
+  closePicker: () => void;
 } | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>("mist");
-  const cycleTheme = () =>
-    setTheme((t) => THEMES[(THEMES.indexOf(t) + 1) % THEMES.length]);
+  const [isPickerOpen, setPickerOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
+  useEffect(() => {
+    if (!isPickerOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPickerOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [isPickerOpen]);
+
   return (
-    <ThemeContext.Provider value={{ theme, cycleTheme }}>
+    <ThemeContext.Provider
+      value={{
+        theme,
+        setTheme,
+        isPickerOpen,
+        openPicker: () => setPickerOpen(true),
+        closePicker: () => setPickerOpen(false),
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );

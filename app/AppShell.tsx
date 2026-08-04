@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { ThemeProvider, useTheme } from "./theme-context";
 import { ListsProvider } from "./lists-context";
 import { ToastProvider } from "./toast-context";
+import PaletteSheet from "./PaletteSheet";
 
 function HomeIcon() {
   return (
@@ -41,7 +42,7 @@ function PlusIcon() {
 }
 
 function Shell({ children }: { children: ReactNode }) {
-  const { cycleTheme } = useTheme();
+  const { openPicker } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -78,7 +79,7 @@ function Shell({ children }: { children: ReactNode }) {
           </p>
         </div>
         <div className="railfoot">
-          <button className="mini" onClick={cycleTheme}>
+          <button className="mini" onClick={openPicker}>
             🎨 색 바꾸기
           </button>
         </div>
@@ -108,6 +109,8 @@ function Shell({ children }: { children: ReactNode }) {
           <PlusIcon />만들기
         </button>
       </nav>
+
+      <PaletteSheet />
     </div>
   );
 }
