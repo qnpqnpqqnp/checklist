@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
 const THEMES = ["mist", "earth", "mono", "dusk", "night"] as const;
 type Theme = (typeof THEMES)[number];
@@ -14,6 +14,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>("mist");
   const cycleTheme = () =>
     setTheme((t) => THEMES[(THEMES.indexOf(t) + 1) % THEMES.length]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
+
   return (
     <ThemeContext.Provider value={{ theme, cycleTheme }}>
       {children}

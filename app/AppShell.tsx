@@ -38,10 +38,10 @@ function PlusIcon() {
 }
 
 function Shell({ children }: { children: ReactNode }) {
-  const { theme, cycleTheme } = useTheme();
+  const { cycleTheme } = useTheme();
 
   return (
-    <div className="app" data-theme={theme}>
+    <div className="app">
       <aside className="rail">
         <div className="brand">
           <span>✓</span>체크리스트

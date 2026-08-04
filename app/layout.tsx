@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ko" className={bricolage.variable}>
+    <html lang="ko" data-theme="mist" className={bricolage.variable}>
       <head>
         <link
           rel="stylesheet"
