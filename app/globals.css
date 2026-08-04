@@ -410,6 +410,9 @@ body {
   line-height: 1.6;
   padding: 2px 4px;
 }
+.note b {
+  color: var(--ink);
+}
 .btn {
   width: 100%;
   padding: 17px;
@@ -417,6 +420,88 @@ body {
   font-size: 15px;
   font-weight: 800;
   border-radius: 20px;
+}
+
+/* 그룹 */
+.gcard {
+  margin: 0 18px 12px;
+  border-radius: 24px;
+  padding: 20px;
+  background: var(--ink);
+  color: #fff;
+  box-shadow:
+    inset 0 -6px 12px rgba(0, 0, 0, 0.35),
+    inset 0 6px 12px rgba(255, 255, 255, 0.1),
+    0 10px 22px var(--sh2);
+}
+.gcard h3 {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.gcode {
+  margin-top: 15px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.gcode b {
+  font-family: var(--disp);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--lime);
+}
+.gcode .lb {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  opacity: 0.6;
+  text-transform: uppercase;
+}
+.copy {
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-radius: 12px;
+  padding: 8px 13px;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.grow {
+  display: flex;
+  gap: 8px;
+  padding: 0 18px 18px;
+}
+
+/* 토스트 */
+.toast {
+  position: fixed;
+  left: 50%;
+  transform: translate(-50%, 16px);
+  bottom: 96px;
+  max-width: 400px;
+  width: calc(100% - 36px);
+  background: var(--ink);
+  color: #fff;
+  border-radius: 18px;
+  padding: 15px 17px;
+  font-size: 13.5px;
+  font-weight: 700;
+  z-index: 40;
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.25s;
+  box-shadow: 0 10px 26px var(--sh2);
+}
+.toast.on {
+  transform: translate(-50%, 0);
+  opacity: 1;
 }
 
 /* 네비 */
@@ -506,6 +591,10 @@ body {
   }
   .lcard.feat {
     grid-column: span 2;
+  }
+  .grpwrap {
+    padding: 0 28px;
+    max-width: 760px;
   }
   .mini {
     padding: 11px 16px;
@@ -725,6 +814,10 @@ body {
   }
   .lcard.feat {
     grid-column: span 2;
+  }
+  .grpwrap {
+    padding: 0 32px;
+    max-width: 800px;
   }
 }
 @media (min-width: 1400px) {

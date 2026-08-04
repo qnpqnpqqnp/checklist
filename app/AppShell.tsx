@@ -1,7 +1,10 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { ThemeProvider, useTheme } from "./theme-context";
+import { ListsProvider } from "./lists-context";
+import { ToastProvider } from "./toast-context";
 
 function HomeIcon() {
   return (
@@ -39,6 +42,8 @@ function PlusIcon() {
 
 function Shell({ children }: { children: ReactNode }) {
   const { cycleTheme } = useTheme();
+  const router = useRouter();
+  const pathname = usePathname();
 
   return (
     <div className="app">
@@ -47,13 +52,19 @@ function Shell({ children }: { children: ReactNode }) {
           <span>✓</span>체크리스트
         </div>
         <div className="rnav">
-          <button className="on">
+          <button
+            className={pathname === "/" ? "on" : ""}
+            onClick={() => router.push("/")}
+          >
             <HomeIcon />홈<span className="kbd">1</span>
           </button>
           <button disabled>
             <SearchIcon />템플릿<span className="kbd">2</span>
           </button>
-          <button disabled>
+          <button
+            className={pathname === "/groups" ? "on" : ""}
+            onClick={() => router.push("/groups")}
+          >
             <GroupIcon />그룹<span className="kbd">3</span>
           </button>
           <button disabled>
@@ -78,13 +89,19 @@ function Shell({ children }: { children: ReactNode }) {
       </div>
 
       <nav className="nav">
-        <button className="on">
+        <button
+          className={pathname === "/" ? "on" : ""}
+          onClick={() => router.push("/")}
+        >
           <HomeIcon />홈
         </button>
         <button disabled>
           <SearchIcon />템플릿
         </button>
-        <button disabled>
+        <button
+          className={pathname === "/groups" ? "on" : ""}
+          onClick={() => router.push("/groups")}
+        >
           <GroupIcon />그룹
         </button>
         <button disabled>
@@ -97,8 +114,12 @@ function Shell({ children }: { children: ReactNode }) {
 
 export default function AppShell({ children }: { children: ReactNode }) {
   return (
-    <ThemeProvider>
-      <Shell>{children}</Shell>
-    </ThemeProvider>
+    <ToastProvider>
+      <ThemeProvider>
+        <ListsProvider>
+          <Shell>{children}</Shell>
+        </ListsProvider>
+      </ThemeProvider>
+    </ToastProvider>
   );
 }
