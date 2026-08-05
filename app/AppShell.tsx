@@ -1,11 +1,13 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { ThemeProvider, useTheme } from "./theme-context";
 import { ListsProvider, useLists } from "./lists-context";
 import { ToastProvider } from "./toast-context";
+import { AuthProvider } from "./auth-context";
 import PaletteSheet from "./PaletteSheet";
+import SettingsDrawer from "./SettingsDrawer";
 
 function HomeIcon() {
   return (
@@ -40,12 +42,20 @@ function PlusIcon() {
     </svg>
   );
 }
+function MenuIcon() {
+  return (
+    <svg viewBox="0 0 24 24">
+      <path d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  );
+}
 
 function Shell({ children }: { children: ReactNode }) {
   const { openPicker } = useTheme();
   const { loading } = useLists();
   const router = useRouter();
   const pathname = usePathname();
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
     <div className="app">
@@ -86,6 +96,9 @@ function Shell({ children }: { children: ReactNode }) {
           </p>
         </div>
         <div className="railfoot">
+          <button className="mini" onClick={() => setDrawerOpen(true)}>
+            ⚙ 설정
+          </button>
           <button className="mini" onClick={openPicker}>
             🎨 색 바꾸기
           </button>
@@ -124,6 +137,15 @@ function Shell({ children }: { children: ReactNode }) {
         </button>
       </nav>
 
+      <button
+        className="hamburger"
+        onClick={() => setDrawerOpen(true)}
+        aria-label="설정 메뉴 열기"
+      >
+        <MenuIcon />
+      </button>
+      <SettingsDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+
       <PaletteSheet />
     </div>
   );
@@ -133,9 +155,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
   return (
     <ToastProvider>
       <ThemeProvider>
-        <ListsProvider>
-          <Shell>{children}</Shell>
-        </ListsProvider>
+        <AuthProvider>
+          <ListsProvider>
+            <Shell>{children}</Shell>
+          </ListsProvider>
+        </AuthProvider>
       </ThemeProvider>
     </ToastProvider>
   );

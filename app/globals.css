@@ -1051,6 +1051,111 @@ body {
   padding: 14px 18px 20px;
 }
 
+/* 설정 드로어 (햄버거 메뉴) */
+.hamburger {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 25;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 13px;
+  background: var(--card);
+  box-shadow: 0 4px 11px var(--sh);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.hamburger svg {
+  width: 19px;
+  height: 19px;
+  stroke: var(--ink);
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.drawer-bg {
+  position: absolute;
+  inset: 0;
+  background: var(--scrim);
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.25s;
+  z-index: 40;
+}
+.drawer-bg.on {
+  opacity: 1;
+  pointer-events: auto;
+}
+.drawer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(300px, 84%);
+  background: var(--putty);
+  border-radius: 0 26px 26px 0;
+  transform: translateX(-101%);
+  transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+  z-index: 41;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 14px 0 34px var(--sh2);
+  pointer-events: none;
+  overflow-y: auto;
+}
+.drawer.on {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+.drawer .dhead {
+  padding: 22px 20px 6px;
+}
+.drawer .dlabel {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mute);
+  padding: 18px 20px 8px;
+}
+.drawer .drow {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: calc(100% - 24px);
+  margin: 0 12px;
+  border: none;
+  background: none;
+  padding: 12px 8px;
+  border-radius: 13px;
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: left;
+}
+.drawer .drow:hover {
+  background: var(--card);
+}
+.drawer .drow svg {
+  width: 19px;
+  height: 19px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+  color: var(--mute);
+}
+.drawer .dfoot {
+  margin-top: auto;
+  padding: 16px 20px 22px;
+}
+
 /* 팔레트 고르기 */
 .pal {
   display: grid;
@@ -1454,13 +1559,20 @@ body {
   }
   .railfoot {
     margin-top: auto;
-    padding-top: 20px;
+    padding: 18px 4px 4px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
   .railfoot .mini {
     width: 100%;
     text-align: left;
     padding: 11px 13px;
     font-size: 13px;
+  }
+  .hamburger {
+    display: none;
   }
 
   .viewport {

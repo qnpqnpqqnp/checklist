@@ -10,6 +10,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { getAnonId } from "@/lib/anon-id";
 import { useToast } from "./toast-context";
+import { useAuth } from "./auth-context";
 
 export type Item = { id: string; text: string; done: boolean };
 export type Period = { name: string; items: Item[] };
@@ -86,12 +87,23 @@ export function ListsProvider({ children }: { children: ReactNode }) {
   const [lists, setLists] = useState<ChecklistList[]>([]);
   const [loading, setLoading] = useState(true);
   const { showToast } = useToast();
+  const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
+    if (authLoading) return;
     let cancelled = false;
     (async () => {
       try {
-        const ownerId = getAnonId();
+        const anonId = getAnonId();
+        // Migrate lists created anonymously (before login) onto the real
+        // account, so they stay visible after signing in.
+        if (user && anonId && anonId !== user.id) {
+          await supabase
+            .from("checklists")
+            .update({ owner_id: user.id })
+            .eq("owner_id", anonId);
+        }
+        const ownerId = user?.id ?? anonId;
         const { data, error } = await supabase
           .from("checklists")
           .select("*")
@@ -113,7 +125,7 @@ export function ListsProvider({ children }: { children: ReactNode }) {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user, authLoading]);
 
   async function createList(
     title: string,
@@ -121,7 +133,7 @@ export function ListsProvider({ children }: { children: ReactNode }) {
     pt: ChecklistPeriodType,
     periods: Period[]
   ) {
-    const ownerId = getAnonId();
+    const ownerId = user?.id ?? getAnonId();
     const { data, error } = await supabase
       .from("checklists")
       .insert({ owner_id: ownerId, title, emoji, pt, periods })
