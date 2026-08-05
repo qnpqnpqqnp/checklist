@@ -91,7 +91,11 @@ export default function GroupsPage() {
             로그인하면 그룹을 만들고 초대 코드로 참여할 수 있어요.
           </div>
           <div style={{ padding: "0 18px" }}>
-            <button className="clay btn" onClick={() => router.push("/login")}>
+            <button
+              className="clay btn"
+              data-onboarding="group-login-gate"
+              onClick={() => router.push("/login")}
+            >
               로그인하러 가기
             </button>
           </div>
@@ -118,11 +122,11 @@ export default function GroupsPage() {
           </p>
 
           {loading ? null : groups.length ? (
-            groups.map((g) => {
+            groups.map((g, i) => {
               const isOwner = g.ownerId === user.id;
               const confirming = confirmId === g.id;
               return (
-                <div key={g.id}>
+                <div key={g.id} data-onboarding={i === 0 ? "group-card" : undefined}>
                   <div className="gcard">
                     <h3>{g.name}</h3>
                     <div className="gcode">
@@ -196,7 +200,11 @@ export default function GroupsPage() {
           )}
 
           <div style={{ padding: "0 18px" }}>
-            <button className="clay btn" onClick={() => setCreateOpen(true)}>
+            <button
+              className="clay btn"
+              data-onboarding="group-create-btn"
+              onClick={() => setCreateOpen(true)}
+            >
               그룹 만들기
             </button>
           </div>

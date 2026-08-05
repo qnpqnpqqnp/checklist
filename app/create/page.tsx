@@ -88,7 +88,7 @@ export default function CreatePage() {
           </div>
           <div className="field">
             <label>어디에 만들까요</label>
-            <div className="seg">
+            <div className="seg" data-onboarding="create-target-seg">
               <button
                 type="button"
                 aria-pressed={target === "personal"}

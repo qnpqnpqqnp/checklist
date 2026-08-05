@@ -23,7 +23,7 @@ export default function Home() {
       </div>
       <div className="scroll">
         <div className="bento">
-          <div className="tile hero s2">
+          <div className="tile hero s2" data-onboarding="home-hero">
             <div className="label">전체 진행률</div>
             <div className="huge">
               {pct}

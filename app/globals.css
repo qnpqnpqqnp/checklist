@@ -1733,3 +1733,125 @@ body {
     grid-column: span 2;
   }
 }
+
+/* 온보딩 투어 */
+.onb-block {
+  position: absolute;
+  inset: 0;
+  z-index: 300;
+}
+/* The dimmed curtain + its cutout stay mounted for the whole tour and only
+   ever slide between positions (never disappear), so switching steps never
+   flashes back to a fully-lit screen. The ring + tooltip below are separate
+   elements that fade via opacity instead, snapping to the new spot while
+   invisible. */
+.onb-hole {
+  position: absolute;
+  border-radius: 16px;
+  box-shadow: 0 0 0 9999px var(--scrim);
+  z-index: 301;
+  pointer-events: none;
+  transition:
+    top 0.32s cubic-bezier(0.32, 0.72, 0, 1),
+    left 0.32s cubic-bezier(0.32, 0.72, 0, 1),
+    width 0.32s cubic-bezier(0.32, 0.72, 0, 1),
+    height 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.onb-ring {
+  position: absolute;
+  border-radius: 16px;
+  border: 3px solid var(--violet);
+  z-index: 302;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.onb-ring.on {
+  opacity: 1;
+}
+.onb-tip {
+  position: absolute;
+  width: min(300px, calc(100% - 32px));
+  background: var(--card);
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: 0 14px 34px var(--sh2);
+  z-index: 303;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.onb-tip.on {
+  opacity: 1;
+}
+.onb-tip-progress {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mute);
+  margin-bottom: 8px;
+}
+.onb-tip h4 {
+  font-family: var(--disp);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 6px;
+}
+.onb-tip p {
+  font-size: 13.5px;
+  color: var(--ink);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+.onb-tip-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.onb-tip-actions .clay {
+  flex: none;
+  width: auto;
+  padding: 11px 22px;
+}
+.onb-skip {
+  border: none;
+  background: none;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--mute);
+  cursor: pointer;
+  padding: 8px 4px;
+}
+
+/* 온보딩 중 지금 설명 중인 화면에 해당하는 네비 항목에 은은한 표시 */
+.onb-hint {
+  position: relative;
+}
+.onb-hint::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--violet);
+  animation: onb-pulse 1.6s ease-out infinite;
+}
+@keyframes onb-pulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  70% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}

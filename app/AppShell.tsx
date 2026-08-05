@@ -7,8 +7,10 @@ import { ListsProvider } from "./lists-context";
 import { ToastProvider } from "./toast-context";
 import { AuthProvider } from "./auth-context";
 import { GroupsProvider } from "./groups-context";
+import { OnboardingProvider, useOnboarding, type OnboardingNavKey } from "./onboarding-context";
 import PaletteSheet from "./PaletteSheet";
 import SettingsDrawer from "./SettingsDrawer";
+import OnboardingOverlay from "./OnboardingOverlay";
 
 function HomeIcon() {
   return (
@@ -56,6 +58,12 @@ function Shell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const { active: onbActive, step: onbStep } = useOnboarding();
+  const onbNavKey = onbActive ? onbStep.navKey : null;
+
+  function navClass(isCurrent: boolean, key: OnboardingNavKey) {
+    return `${isCurrent ? "on" : ""}${onbNavKey === key ? " onb-hint" : ""}`;
+  }
 
   return (
     <div className="app">
@@ -65,25 +73,25 @@ function Shell({ children }: { children: ReactNode }) {
         </div>
         <div className="rnav">
           <button
-            className={pathname === "/" ? "on" : ""}
+            className={navClass(pathname === "/", "home")}
             onClick={() => router.push("/")}
           >
             <HomeIcon />홈<span className="kbd">1</span>
           </button>
           <button
-            className={pathname.startsWith("/templates") ? "on" : ""}
+            className={navClass(pathname.startsWith("/templates"), "templates")}
             onClick={() => router.push("/templates")}
           >
             <SearchIcon />템플릿<span className="kbd">2</span>
           </button>
           <button
-            className={pathname === "/groups" ? "on" : ""}
+            className={navClass(pathname === "/groups", "groups")}
             onClick={() => router.push("/groups")}
           >
             <GroupIcon />그룹<span className="kbd">3</span>
           </button>
           <button
-            className={pathname === "/create" ? "on" : ""}
+            className={navClass(pathname === "/create", "create")}
             onClick={() => router.push("/create")}
           >
             <PlusIcon />만들기<span className="kbd">N</span>
@@ -96,7 +104,11 @@ function Shell({ children }: { children: ReactNode }) {
           </p>
         </div>
         <div className="railfoot">
-          <button className="mini" onClick={() => setDrawerOpen(true)}>
+          <button
+            className="mini"
+            data-onboarding="menu-trigger"
+            onClick={() => setDrawerOpen(true)}
+          >
             ⚙ 설정
           </button>
           <button className="mini" onClick={openPicker}>
@@ -111,25 +123,25 @@ function Shell({ children }: { children: ReactNode }) {
 
       <nav className="nav">
         <button
-          className={pathname === "/" ? "on" : ""}
+          className={navClass(pathname === "/", "home")}
           onClick={() => router.push("/")}
         >
           <HomeIcon />홈
         </button>
         <button
-          className={pathname.startsWith("/templates") ? "on" : ""}
+          className={navClass(pathname.startsWith("/templates"), "templates")}
           onClick={() => router.push("/templates")}
         >
           <SearchIcon />템플릿
         </button>
         <button
-          className={pathname === "/groups" ? "on" : ""}
+          className={navClass(pathname === "/groups", "groups")}
           onClick={() => router.push("/groups")}
         >
           <GroupIcon />그룹
         </button>
         <button
-          className={pathname === "/create" ? "on" : ""}
+          className={navClass(pathname === "/create", "create")}
           onClick={() => router.push("/create")}
         >
           <PlusIcon />만들기
@@ -138,6 +150,7 @@ function Shell({ children }: { children: ReactNode }) {
 
       <button
         className="hamburger"
+        data-onboarding="menu-trigger"
         onClick={() => setDrawerOpen(true)}
         aria-label="설정 메뉴 열기"
       >
@@ -146,6 +159,7 @@ function Shell({ children }: { children: ReactNode }) {
       <SettingsDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
       <PaletteSheet />
+      <OnboardingOverlay />
     </div>
   );
 }
@@ -157,7 +171,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
         <AuthProvider>
           <GroupsProvider>
             <ListsProvider>
-              <Shell>{children}</Shell>
+              <OnboardingProvider>
+                <Shell>{children}</Shell>
+              </OnboardingProvider>
             </ListsProvider>
           </GroupsProvider>
         </AuthProvider>

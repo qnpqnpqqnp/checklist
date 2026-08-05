@@ -131,6 +131,7 @@ export default function TemplatesPage() {
                 <button
                   key={x.id}
                   className={`lcard${i % 5 === 0 ? " s2 feat" : ""}`}
+                  data-onboarding={i === 0 ? "template-card" : undefined}
                   onClick={() => setOpenId(x.id)}
                 >
                   <div className="cardtop">
