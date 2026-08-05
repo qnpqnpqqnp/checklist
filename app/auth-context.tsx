@@ -9,6 +9,7 @@ import {
 } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import { withTimeout } from "@/lib/with-timeout";
 
 type AuthResult = { error: string | null; needsEmailConfirm?: boolean };
 
@@ -27,11 +28,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    supabase.auth.getSession().then(({ data }) => {
-      if (cancelled) return;
-      setUser(data.session?.user ?? null);
-      setLoading(false);
-    });
+    withTimeout(supabase.auth.getSession(), 5000)
+      .then(({ data }) => {
+        if (cancelled) return;
+        setUser(data.session?.user ?? null);
+        setLoading(false);
+      })
+      .catch(() => {
+        // Hung/broken request — fail open to a logged-out state rather
+        // than leaving the whole app stuck on its loading screen.
+        if (cancelled) return;
+        setUser(null);
+        setLoading(false);
+      });
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       setLoading(false);

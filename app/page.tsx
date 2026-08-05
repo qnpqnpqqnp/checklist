@@ -20,11 +20,6 @@ export default function Home() {
     <>
       <div className="top">
         <h1>오늘</h1>
-        <div className="act">
-          <button className="mini" disabled aria-label="새로 만들기">
-            + 새로
-          </button>
-        </div>
       </div>
       <div className="scroll">
         <div className="bento">

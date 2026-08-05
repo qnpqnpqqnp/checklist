@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { ThemeProvider, useTheme } from "./theme-context";
-import { ListsProvider, useLists } from "./lists-context";
+import { ListsProvider } from "./lists-context";
 import { ToastProvider } from "./toast-context";
 import { AuthProvider } from "./auth-context";
 import { GroupsProvider } from "./groups-context";
@@ -53,7 +53,6 @@ function MenuIcon() {
 
 function Shell({ children }: { children: ReactNode }) {
   const { openPicker } = useTheme();
-  const { loading } = useLists();
   const router = useRouter();
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -107,7 +106,6 @@ function Shell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="viewport">
-        <div className={`loading${loading ? "" : " off"}`}>불러오는 중…</div>
         <section className="screen on">{children}</section>
       </div>
 

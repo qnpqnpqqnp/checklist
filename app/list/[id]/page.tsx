@@ -11,6 +11,7 @@ export default function ListDetailPage() {
   const router = useRouter();
   const {
     lists,
+    loading,
     toggleItem,
     addItem,
     updateItem,
@@ -47,7 +48,13 @@ export default function ListDetailPage() {
         </div>
         <div className="scroll">
           <div className="empty">
-            <b>찾을 수 없어요</b>삭제되었거나 존재하지 않는 체크리스트예요.
+            {loading ? (
+              <b>불러오는 중…</b>
+            ) : (
+              <>
+                <b>찾을 수 없어요</b>삭제되었거나 존재하지 않는 체크리스트예요.
+              </>
+            )}
           </div>
         </div>
       </>

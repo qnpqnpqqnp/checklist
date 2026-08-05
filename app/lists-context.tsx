@@ -11,6 +11,7 @@ import {
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { getAnonId } from "@/lib/anon-id";
+import { withTimeout } from "@/lib/with-timeout";
 import { useToast } from "./toast-context";
 import { useAuth } from "./auth-context";
 import { useGroups, type Group } from "./groups-context";
@@ -96,7 +97,13 @@ export function ListsProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    if (authLoading || groupsLoading) return;
+    // Only gated on auth, not groups: personal checklists only need to know
+    // who the caller is, not which groups they belong to. While groups are
+    // still loading, `groups` is simply `[]`, so the group-half of the query
+    // below is skipped for this pass and re-added once groups arrive
+    // (groupsLoading/groups are still in the deps array, so this effect
+    // re-runs then) — the personal list no longer waits on that round trip.
+    if (authLoading) return;
     let cancelled = false;
     (async () => {
       try {
@@ -127,10 +134,13 @@ export function ListsProvider({ children }: { children: ReactNode }) {
                 .order("created_at", { ascending: false })
             : null;
 
-        const [personalRes, groupRes] = await Promise.all([
-          personalQuery,
-          groupQuery ?? Promise.resolve({ data: [], error: null }),
-        ]);
+        const [personalRes, groupRes] = await withTimeout(
+          Promise.all([
+            personalQuery,
+            groupQuery ?? Promise.resolve({ data: [], error: null }),
+          ]),
+          5000
+        );
         if (cancelled) return;
         if (personalRes.error || groupRes.error) {
           showToast("체크리스트를 불러오지 못했어요");

@@ -1,5 +1,6 @@
 import { supabase } from "./supabase";
 import { TEMPLATES } from "./template-data";
+import { withTimeout } from "./with-timeout";
 
 // 시연용 기준값. 실제 사용 수가 여기에 더해집니다.
 const BASE: Record<number, [number, number]> = {
@@ -43,19 +44,15 @@ export function seedStats(): StatsMap {
   return stats;
 }
 
-function timeout(ms: number): Promise<never> {
-  return new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), ms));
-}
-
 // Falls back to seedStats() whenever the network request fails, throws, or
 // simply never resolves (slow/blocked mobile networks) — the template grid
 // must never be stuck rendering nothing while this is in flight.
 export async function loadStats(): Promise<StatsMap> {
   try {
-    const { data, error } = await Promise.race([
+    const { data, error } = await withTimeout(
       supabase.from("template_stats").select("data").eq("id", STATS_ROW_ID).maybeSingle(),
-      timeout(5000),
-    ]);
+      5000
+    );
     if (error || !data || typeof data.data !== "object" || data.data === null) {
       return seedStats();
     }

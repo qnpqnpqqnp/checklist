@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { supabase } from "@/lib/supabase";
+import { withTimeout } from "@/lib/with-timeout";
 import { useAuth } from "./auth-context";
 
 export type Group = { id: string; code: string; name: string; ownerId: string };
@@ -52,21 +53,27 @@ export function GroupsProvider({ children }: { children: ReactNode }) {
         }
         return;
       }
-      const { data, error } = await supabase
-        .from("group_members")
-        .select("groups(id, code, name, owner_id)")
-        .eq("user_id", user.id);
-      if (cancelled) return;
-      if (!error && data) {
-        const rows = data as unknown as MembershipRow[];
-        setGroups(
-          rows
-            .map((r) => r.groups)
-            .filter((g): g is GroupRow => !!g)
-            .map(rowToGroup)
+      try {
+        const { data, error } = await withTimeout(
+          supabase.from("group_members").select("groups(id, code, name, owner_id)").eq("user_id", user.id),
+          5000
         );
+        if (cancelled) return;
+        if (!error && data) {
+          const rows = data as unknown as MembershipRow[];
+          setGroups(
+            rows
+              .map((r) => r.groups)
+              .filter((g): g is GroupRow => !!g)
+              .map(rowToGroup)
+          );
+        }
+      } catch {
+        // Hung/broken request — fall back to "no groups" rather than
+        // leaving this (and anything waiting on it) stuck loading forever.
+        if (!cancelled) setGroups([]);
       }
-      setLoading(false);
+      if (!cancelled) setLoading(false);
     })();
     return () => {
       cancelled = true;
