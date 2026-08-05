@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 import AppShell from "./AppShell";
+import ServiceWorkerRegister from "./ServiceWorkerRegister";
 
 const bricolage = Bricolage_Grotesque({
   variable: "--font-disp",
@@ -12,6 +13,14 @@ const bricolage = Bricolage_Grotesque({
 export const metadata: Metadata = {
   title: "체크리스트",
   description: "체크리스트",
+  appleWebApp: {
+    title: "체크리스트",
+    statusBarStyle: "default",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#4A5BA8",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -25,6 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body>
         <AppShell>{children}</AppShell>
+        <ServiceWorkerRegister />
       </body>
     </html>
   );
