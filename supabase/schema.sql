@@ -49,6 +49,9 @@ create policy "authed can read groups" on public.groups
 create policy "authed can create own group" on public.groups
   for insert with check (auth.uid() = owner_id);
 
+create policy "owner can delete own group" on public.groups
+  for delete using (auth.uid() = owner_id);
+
 -- 그룹 멤버십 (다대다)
 create table if not exists public.group_members (
   group_id uuid not null references public.groups(id) on delete cascade,
@@ -75,6 +78,21 @@ create policy "member can read own membership" on public.group_members
 
 create policy "authed can join a group" on public.group_members
   for insert with check (user_id = auth.uid());
+
+-- 본인 멤버십은 언제든 나갈 수 있고(user_id = auth.uid()), 그룹 소유자는
+-- 그룹을 삭제할 때 다른 멤버들의 멤버십 행도 정리할 수 있어야 합니다
+-- (owner_id 체크는 group_members가 아니라 groups 테이블을 보는 서브쿼리라
+-- 자기참조 재귀 문제가 없습니다). 앱은 그룹 삭제 시 checklists →
+-- group_members → groups 순서로 명시적으로 지우므로, 이 정책이 평가되는
+-- 시점엔 groups 행이 아직 남아 있어 owner 체크가 정상적으로 동작합니다.
+create policy "leave or owner cleanup membership" on public.group_members
+  for delete using (
+    user_id = auth.uid()
+    or exists (
+      select 1 from public.groups g
+      where g.id = group_members.group_id and g.owner_id = auth.uid()
+    )
+  );
 
 -- checklists: 그룹에 속한 체크리스트를 위한 컬럼
 alter table public.checklists add column if not exists group_id uuid references public.groups(id) on delete cascade;

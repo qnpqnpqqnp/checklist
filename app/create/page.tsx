@@ -6,6 +6,7 @@ import { useLists, type ChecklistPeriodType, type Period } from "../lists-contex
 import { useToast } from "../toast-context";
 import { useAuth } from "../auth-context";
 import { useGroups } from "../groups-context";
+import GroupPickerSheet from "./GroupPickerSheet";
 
 const EMOJI = ["📝", "📦", "✈️", "🖥", "🏋️", "🧹", "💻", "🎂", "🌱", "🎯"];
 
@@ -22,7 +23,10 @@ export default function CreatePage() {
   const [periodCount, setPeriodCount] = useState("4");
   const [target, setTarget] = useState<"personal" | "group">("personal");
   const [groupId, setGroupId] = useState("");
+  const [groupPickerOpen, setGroupPickerOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  const selectedGroup = groups.find((g) => g.id === groupId);
 
   function handlePickGroupTarget() {
     if (!user) {
@@ -115,18 +119,17 @@ export default function CreatePage() {
             {user && target === "group" && (
               <div style={{ paddingTop: "10px" }}>
                 {groups.length ? (
-                  <select
-                    aria-label="그룹 선택"
-                    value={groupId}
-                    onChange={(e) => setGroupId(e.target.value)}
-                  >
-                    <option value="">그룹 선택</option>
-                    {groups.map((g) => (
-                      <option key={g.id} value={g.id}>
-                        {g.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="gpick">
+                    <button
+                      type="button"
+                      onClick={() => setGroupPickerOpen(true)}
+                    >
+                      <span>{selectedGroup ? selectedGroup.name : "그룹 선택"}</span>
+                      <span className="code">
+                        {selectedGroup ? selectedGroup.code : "▾"}
+                      </span>
+                    </button>
+                  </div>
                 ) : (
                   <p className="note">
                     속한 그룹이 없어요.{" "}
@@ -216,6 +219,14 @@ export default function CreatePage() {
           </button>
         </div>
       </div>
+
+      <GroupPickerSheet
+        open={groupPickerOpen}
+        onClose={() => setGroupPickerOpen(false)}
+        groups={groups}
+        selectedId={groupId}
+        onSelect={setGroupId}
+      />
     </>
   );
 }

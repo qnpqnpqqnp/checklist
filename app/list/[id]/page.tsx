@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useLists, stat } from "../../lists-context";
 import { useToast } from "../../toast-context";
+import AddPeriodSheet from "./AddPeriodSheet";
 
 export default function ListDetailPage() {
   const params = useParams<{ id: string }>();
@@ -24,6 +25,9 @@ export default function ListDetailPage() {
   const [newItemText, setNewItemText] = useState("");
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
+  const [addPeriodOpen, setAddPeriodOpen] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const skipBlurSaveRef = useRef(false);
 
   const cur = lists.find((l) => l.id === params.id);
@@ -55,6 +59,7 @@ export default function ListDetailPage() {
   const [d, t] = stat(cur);
   const pct = t ? Math.round((d / t) * 100) : 0;
   const showTabs = !(cur.pt === "none" && cur.periods.length === 1 && !editMode);
+  const nextPeriodName = `${cur.periods.length + 1}${cur.pt === "daily" ? "일차" : "주차"}`;
 
   async function handleItemClick(itemId: string) {
     if (editMode) {
@@ -88,20 +93,16 @@ export default function ListDetailPage() {
     setEditingItemId(null);
   }
 
-  async function handleAddPeriod() {
-    const n = window.prompt(
-      "기간 이름",
-      `${cur!.periods.length + 1}${cur!.pt === "daily" ? "일차" : "주차"}`
-    );
-    if (!n) return;
+  async function handleSubmitPeriod(name: string) {
     const nextIndex = cur!.periods.length;
-    await addPeriod(cur!.id, n);
+    await addPeriod(cur!.id, name);
     setCurWeek(nextIndex);
   }
 
-  async function handleDeleteList() {
-    if (!window.confirm("삭제하면 되돌릴 수 없어요. 삭제할까요?")) return;
+  async function handleConfirmDelete() {
+    setDeleting(true);
     await deleteList(cur!.id);
+    setDeleting(false);
     showToast("삭제했어요");
     router.push("/");
   }
@@ -160,7 +161,7 @@ export default function ListDetailPage() {
             );
           })}
           {editMode && (
-            <button className="wt add" onClick={handleAddPeriod}>
+            <button className="wt add" onClick={() => setAddPeriodOpen(true)}>
               + 기간
             </button>
           )}
@@ -233,14 +234,37 @@ export default function ListDetailPage() {
           )}
         </div>
         {editMode && (
-          <div style={{ padding: "18px" }}>
-            <button
-              className="clay pale btn"
-              style={{ color: "var(--red)" }}
-              onClick={handleDeleteList}
-            >
-              이 체크리스트 삭제
-            </button>
+          <div style={{ padding: "18px", display: "flex", flexDirection: "column", gap: "9px" }}>
+            {!confirmingDelete ? (
+              <button
+                className="clay pale btn"
+                style={{ color: "var(--red)" }}
+                onClick={() => setConfirmingDelete(true)}
+              >
+                이 체크리스트 삭제
+              </button>
+            ) : (
+              <>
+                <p className="note">
+                  <b>삭제하면 되돌릴 수 없어요.</b> 정말 삭제할까요?
+                </p>
+                <button
+                  className="clay btn"
+                  style={{ background: "var(--red)", color: "#fff" }}
+                  onClick={handleConfirmDelete}
+                  disabled={deleting}
+                >
+                  {deleting ? "삭제 중…" : "정말 삭제할게요"}
+                </button>
+                <button
+                  className="clay pale btn"
+                  onClick={() => setConfirmingDelete(false)}
+                  disabled={deleting}
+                >
+                  취소
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -258,6 +282,13 @@ export default function ListDetailPage() {
           추가
         </button>
       </div>
+
+      <AddPeriodSheet
+        open={addPeriodOpen}
+        onClose={() => setAddPeriodOpen(false)}
+        placeholder={nextPeriodName}
+        onSubmit={handleSubmitPeriod}
+      />
     </>
   );
 }
