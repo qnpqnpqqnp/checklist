@@ -1096,8 +1096,15 @@ body {
   width: min(300px, 84%);
   background: var(--putty);
   border-radius: 0 26px 26px 0;
-  transform: translateX(-101%);
-  transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+  /* -100% clears the drawer's own body, but box-shadow (14px offset +
+     34px blur ≈ 48px reach) extends well past that — a fixed pixel
+     buffer (not a %, which shrinks with the drawer's own width) is
+     needed so the shadow's blur never crosses back into view. */
+  transform: translateX(calc(-100% - 60px));
+  opacity: 0;
+  transition:
+    transform 0.32s cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 0.25s;
   z-index: 41;
   display: flex;
   flex-direction: column;
@@ -1107,6 +1114,7 @@ body {
 }
 .drawer.on {
   transform: translateX(0);
+  opacity: 1;
   pointer-events: auto;
 }
 .drawer .dhead {
