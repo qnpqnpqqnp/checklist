@@ -47,7 +47,7 @@
   --glow: 0 7px 16px rgba(27, 69, 224, 0.2);
   --glow2: 0 2px 7px rgba(27, 69, 224, 0.16);
 }
-/* 4 · 노을 — 웜 뉴트럴 + 머드 로즈 */
+/* 4 · 가을 — 모래 + 딥 로즈 */
 [data-theme="dusk"] {
   --putty: #f0eae7;
   --card: #fdfaf9;
@@ -85,6 +85,18 @@
 }
 [data-theme="night"] .clay:not(.pale) {
   color: #fff;
+}
+/* 6 · 노을 — 살구빛 + 선셋 오렌지 */
+[data-theme="sunset"] {
+  --putty: #f5e6d8;
+  --card: #fdf6ef;
+  --ink: #2a2018;
+  --mute: #8f7a66;
+  --violet: #c05a2e;
+  --lime: #efc9a8;
+  --line: #e5d2bc;
+  --glow: 0 7px 16px rgba(192, 90, 46, 0.2);
+  --glow2: 0 2px 7px rgba(192, 90, 46, 0.16);
 }
 
 * {

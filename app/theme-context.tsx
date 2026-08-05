@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 
-type Theme = "mist" | "earth" | "mono" | "dusk" | "night";
+type Theme = "mist" | "earth" | "mono" | "dusk" | "night" | "sunset";
 
 const ThemeContext = createContext<{
   theme: Theme;

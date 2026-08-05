@@ -6,8 +6,9 @@ const PAL: { k: Theme; n: string; d: string; c: string[] }[] = [
   { k: "mist", n: "안개", d: "저채도 인디고", c: ["#EDEEF1", "#4A5BA8", "#C3CDE8", "#1B1D24"] },
   { k: "earth", n: "흙", d: "모래 + 딥그린", c: ["#EDE9E2", "#39604F", "#CBD9BE", "#23211C"] },
   { k: "mono", n: "먹", d: "무채색 + 코발트", c: ["#F1F1F1", "#1B45E0", "#DDE4FB", "#101012"] },
-  { k: "dusk", n: "노을", d: "웜 뉴트럴 + 로즈", c: ["#F0EAE7", "#8A5561", "#E7D6D3", "#241E1E"] },
+  { k: "dusk", n: "가을", d: "모래 + 딥로즈", c: ["#F0EAE7", "#8A5561", "#E7D6D3", "#241E1E"] },
   { k: "night", n: "밤", d: "다크 모드", c: ["#141519", "#6675E8", "#3B4360", "#D6D8E0"] },
+  { k: "sunset", n: "노을", d: "살구빛 + 선셋 오렌지", c: ["#F5E6D8", "#C05A2E", "#EFC9A8", "#2A2018"] },
 ];
 
 export default function PaletteSheet() {
