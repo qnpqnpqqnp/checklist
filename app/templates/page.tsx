@@ -9,6 +9,7 @@ import {
   hotId,
   loadStats,
   ranks,
+  seedStats,
   uses,
   type StatsMap,
 } from "@/lib/template-stats";
@@ -41,7 +42,7 @@ export default function TemplatesPage() {
   const { createList } = useLists();
   const { showToast } = useToast();
 
-  const [stats, setStats] = useState<StatsMap | null>(null);
+  const [stats, setStats] = useState<StatsMap>(() => seedStats());
   const [curCat, setCurCat] = useState("전체");
   const [curQ, setCurQ] = useState("");
   const [sortBy, setSortBy] = useState<"hot" | "name">("hot");
@@ -64,7 +65,7 @@ export default function TemplatesPage() {
         (curCat === "전체" || x.c === curCat) &&
         (!q || x.t.includes(q) || x.c.includes(q))
     );
-    if (sortBy === "hot" && stats) {
+    if (sortBy === "hot") {
       l = [...l].sort((a, b) => uses(stats, b.id) - uses(stats, a.id));
     }
     return l;
@@ -77,7 +78,7 @@ export default function TemplatesPage() {
     }));
     const created = await createList(t.t, t.e, t.pt, periods);
     if (!created) return;
-    if (stats) setStats(await bumpStat(stats, t.id));
+    setStats(await bumpStat(stats, t.id));
     setOpenId(null);
     showToast("내 체크리스트에 담았어요");
     router.push("/");
@@ -122,7 +123,7 @@ export default function TemplatesPage() {
         ))}
       </div>
       <div className="scroll">
-        {!stats ? null : list.length ? (
+        {list.length ? (
           <div className="bento">
             {list.map((x, i) => {
               const n = x.w.reduce((a, b) => a + b[1].length, 0);
@@ -157,14 +158,12 @@ export default function TemplatesPage() {
         )}
       </div>
 
-      {stats && (
-        <TemplateSheet
-          template={openTemplate}
-          stats={stats}
-          onClose={() => setOpenId(null)}
-          onUse={handleUseTemplate}
-        />
-      )}
+      <TemplateSheet
+        template={openTemplate}
+        stats={stats}
+        onClose={() => setOpenId(null)}
+        onUse={handleUseTemplate}
+      />
     </>
   );
 }

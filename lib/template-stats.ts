@@ -32,7 +32,7 @@ function currentWeekKey(): string {
 
 export const WEEK_KEY = currentWeekKey();
 
-function seedStats(): StatsMap {
+export function seedStats(): StatsMap {
   const stats: StatsMap = {};
   for (const [id, [n, w]] of Object.entries(BASE)) {
     stats[Number(id)] = { n, w: { [WEEK_KEY]: w } };
@@ -43,21 +43,31 @@ function seedStats(): StatsMap {
   return stats;
 }
 
+function timeout(ms: number): Promise<never> {
+  return new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), ms));
+}
+
+// Falls back to seedStats() whenever the network request fails, throws, or
+// simply never resolves (slow/blocked mobile networks) — the template grid
+// must never be stuck rendering nothing while this is in flight.
 export async function loadStats(): Promise<StatsMap> {
-  const { data, error } = await supabase
-    .from("template_stats")
-    .select("data")
-    .eq("id", STATS_ROW_ID)
-    .maybeSingle();
-  if (error || !data || typeof data.data !== "object" || data.data === null) {
+  try {
+    const { data, error } = await Promise.race([
+      supabase.from("template_stats").select("data").eq("id", STATS_ROW_ID).maybeSingle(),
+      timeout(5000),
+    ]);
+    if (error || !data || typeof data.data !== "object" || data.data === null) {
+      return seedStats();
+    }
+    const stats = data.data as StatsMap;
+    TEMPLATES.forEach((t) => {
+      if (!stats[t.id]) stats[t.id] = { n: 0, w: {} };
+      if (!stats[t.id].w) stats[t.id].w = {};
+    });
+    return stats;
+  } catch {
     return seedStats();
   }
-  const stats = data.data as StatsMap;
-  TEMPLATES.forEach((t) => {
-    if (!stats[t.id]) stats[t.id] = { n: 0, w: {} };
-    if (!stats[t.id].w) stats[t.id].w = {};
-  });
-  return stats;
 }
 
 export async function bumpStat(stats: StatsMap, id: number): Promise<StatsMap> {
