@@ -204,7 +204,7 @@ export default function ListDetailPage() {
                   >
                     <span className="box">
                       <svg viewBox="0 0 24 24">
-                        <path d="M4 12.5l5 5L20 6.5" />
+                        <path pathLength="22" d="M4 12.5l5 5L20 6.5" />
                       </svg>
                     </span>
                     <span className="txt">{it.text}</span>

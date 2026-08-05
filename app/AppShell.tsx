@@ -60,7 +60,10 @@ function Shell({ children }: { children: ReactNode }) {
           >
             <HomeIcon />홈<span className="kbd">1</span>
           </button>
-          <button disabled>
+          <button
+            className={pathname.startsWith("/templates") ? "on" : ""}
+            onClick={() => router.push("/templates")}
+          >
             <SearchIcon />템플릿<span className="kbd">2</span>
           </button>
           <button
@@ -101,7 +104,10 @@ function Shell({ children }: { children: ReactNode }) {
         >
           <HomeIcon />홈
         </button>
-        <button disabled>
+        <button
+          className={pathname.startsWith("/templates") ? "on" : ""}
+          onClick={() => router.push("/templates")}
+        >
           <SearchIcon />템플릿
         </button>
         <button

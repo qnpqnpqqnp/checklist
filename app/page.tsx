@@ -57,7 +57,7 @@ export default function Home() {
               <div className="empty" style={{ padding: "22px 6px" }}>
                 <b>아직 비어 있어요</b>템플릿에서 가져오거나 직접 만들어 보세요.
               </div>
-              <button className="clay btn" disabled>
+              <button className="clay btn" onClick={() => router.push("/templates")}>
                 템플릿 둘러보기
               </button>
             </div>

@@ -38,3 +38,23 @@ create policy "allow all update" on public.checklists
 
 create policy "allow all delete" on public.checklists
   for delete using (true);
+
+-- Shared, global usage counters for the template gallery (/templates).
+-- Stored as a single JSON blob (one row) rather than a normalized table,
+-- matching the read-modify-write approach used by the design prototype.
+-- Same caveat as above: no auth means no real write protection.
+create table if not exists public.template_stats (
+  id text primary key,
+  data jsonb not null default '{}'::jsonb
+);
+
+alter table public.template_stats enable row level security;
+
+create policy "allow all select" on public.template_stats
+  for select using (true);
+
+create policy "allow all insert" on public.template_stats
+  for insert with check (true);
+
+create policy "allow all update" on public.template_stats
+  for update using (true);

@@ -15,7 +15,7 @@ export default function CreatePage() {
   const [title, setTitle] = useState("");
   const [emoji, setEmoji] = useState(EMOJI[0]);
   const [pt, setPt] = useState<ChecklistPeriodType>("none");
-  const [periodCount, setPeriodCount] = useState(4);
+  const [periodCount, setPeriodCount] = useState("4");
   const [submitting, setSubmitting] = useState(false);
 
   async function handleCreate() {
@@ -26,7 +26,7 @@ export default function CreatePage() {
     }
     let periods: Period[] = [{ name: "전체", items: [] }];
     if (pt !== "none") {
-      const n = Math.min(24, Math.max(2, periodCount || 4));
+      const n = Math.min(24, Math.max(2, Number(periodCount) || 4));
       periods = Array.from({ length: n }, (_, i) => ({
         name: `${i + 1}${pt === "daily" ? "일차" : "주차"}`,
         items: [],
@@ -108,14 +108,14 @@ export default function CreatePage() {
                 min={2}
                 max={24}
                 value={periodCount}
-                onChange={(e) => setPeriodCount(Number(e.target.value))}
+                onChange={(e) => setPeriodCount(e.target.value.replace(/[^0-9]/g, ""))}
               />
             </div>
           )}
           <button className="clay btn" onClick={handleCreate} disabled={submitting}>
             만들기
           </button>
-          <button className="clay pale btn" disabled>
+          <button className="clay pale btn" onClick={() => router.push("/templates")}>
             템플릿에서 가져오기
           </button>
           <p className="note">
