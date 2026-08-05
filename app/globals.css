@@ -169,7 +169,11 @@ body {
 /* ── 상단 ── */
 .top {
   flex: none;
-  padding: 22px 18px 14px;
+  /* 우측 여백을 넉넉히 둬서 이 아래 배경에 떠 있는 .hamburger(우상단
+     고정, 40px+16px 여백)와 h1/.act 콘텐츠가 겹치지 않게 함. 데스크톱
+     폭에서는 .hamburger가 숨겨지므로 아래 미디어쿼리가 이 패딩을
+     좌우 대칭으로 되돌림. */
+  padding: 22px 66px 14px 18px;
   display: flex;
   align-items: flex-end;
   gap: 10px;
@@ -1091,7 +1095,7 @@ body {
 .hamburger {
   position: absolute;
   top: 16px;
-  left: 16px;
+  right: 16px;
   z-index: 25;
   width: 40px;
   height: 40px;
@@ -1310,7 +1314,9 @@ body {
     border-right: 1px solid var(--line);
   }
   .top {
-    padding: 30px 28px 18px;
+    /* 이 폭에서도 .hamburger가 아직 보이므로(사이드바는 1100px부터) 우측
+       여백을 계속 확보함 */
+    padding: 30px 76px 18px 28px;
   }
   .top h1 {
     font-size: 36px;
