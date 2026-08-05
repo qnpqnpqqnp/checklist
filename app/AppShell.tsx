@@ -6,6 +6,7 @@ import { ThemeProvider, useTheme } from "./theme-context";
 import { ListsProvider, useLists } from "./lists-context";
 import { ToastProvider } from "./toast-context";
 import { AuthProvider } from "./auth-context";
+import { GroupsProvider } from "./groups-context";
 import PaletteSheet from "./PaletteSheet";
 import SettingsDrawer from "./SettingsDrawer";
 
@@ -156,9 +157,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
     <ToastProvider>
       <ThemeProvider>
         <AuthProvider>
-          <ListsProvider>
-            <Shell>{children}</Shell>
-          </ListsProvider>
+          <GroupsProvider>
+            <ListsProvider>
+              <Shell>{children}</Shell>
+            </ListsProvider>
+          </GroupsProvider>
         </AuthProvider>
       </ThemeProvider>
     </ToastProvider>

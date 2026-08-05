@@ -208,6 +208,9 @@ export default function ListDetailPage() {
                       </svg>
                     </span>
                     <span className="txt">{it.text}</span>
+                    {cur.groupId && it.addedBy && (
+                      <span className="badge">{it.addedBy}</span>
+                    )}
                     {editMode && <span className="del">×</span>}
                   </button>
                   <button
