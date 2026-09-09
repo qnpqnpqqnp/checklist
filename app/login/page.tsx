@@ -5,8 +5,31 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../auth-context";
 import { useToast } from "../toast-context";
 
+function GoogleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path
+        fill="#4285F4"
+        d="M23.04 12.27c0-.82-.07-1.42-.22-2.05H12.24v3.72h6.19c-.13 1.02-.8 2.56-2.31 3.6l-.02.14 3.36 2.6.23.02c2.14-1.97 3.35-4.87 3.35-8.03z"
+      />
+      <path
+        fill="#34A853"
+        d="M12.24 23c3.03 0 5.57-1 7.43-2.7l-3.54-2.75c-.95.66-2.22 1.12-3.89 1.12-2.97 0-5.48-1.97-6.38-4.69l-.13.01-3.49 2.7-.05.12C4.02 20.7 7.83 23 12.24 23z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.86 13.98a6.85 6.85 0 010-4.36l-.01-.14-3.53-2.75-.12.06a10.98 10.98 0 000 9.88l3.66-2.69z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12.24 4.79c2.11 0 3.53.9 4.34 1.66l3.17-3.06C17.8 1.68 15.27.6 12.24.6 7.83.6 4.02 2.9 2.2 6.6l3.65 2.83c.91-2.72 3.42-4.64 6.39-4.64z"
+      />
+    </svg>
+  );
+}
+
 export default function LoginPage() {
-  const { user, signUp, signIn, signOut, resetPassword } = useAuth();
+  const { user, signUp, signIn, signInWithGoogle, signOut, resetPassword } = useAuth();
   const { showToast } = useToast();
   const router = useRouter();
 
@@ -50,6 +73,15 @@ export default function LoginPage() {
     }
     showToast("로그인됐어요");
     router.push("/");
+  }
+
+  async function handleGoogleSignIn() {
+    setSubmitting(true);
+    const { error } = await signInWithGoogle();
+    setSubmitting(false);
+    if (error) {
+      showToast(error);
+    }
   }
 
   async function handleResetPassword() {
@@ -178,6 +210,15 @@ export default function LoginPage() {
             disabled={submitting}
           >
             가입
+          </button>
+          <button
+            type="button"
+            className="clay pale btn iconbtn"
+            onClick={handleGoogleSignIn}
+            disabled={submitting}
+          >
+            <GoogleIcon />
+            구글로 로그인
           </button>
           <button
             type="button"

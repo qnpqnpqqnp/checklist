@@ -18,6 +18,7 @@ const AuthContext = createContext<{
   loading: boolean;
   signUp: (email: string, password: string) => Promise<AuthResult>;
   signIn: (email: string, password: string) => Promise<AuthResult>;
+  signInWithGoogle: () => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   deleteAccount: () => Promise<{ error: string | null }>;
   resetPassword: (email: string) => Promise<AuthResult>;
@@ -61,6 +62,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signIn(email: string, password: string): Promise<AuthResult> {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { error: error.message };
+    return { error: null };
+  }
+
+  async function signInWithGoogle(): Promise<{ error: string | null }> {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/` },
+    });
+    // On success the browser is already navigating away to Google, so
+    // there's nothing to return to — this only ever resolves when
+    // signInWithOAuth failed before redirecting (e.g. provider disabled).
     if (error) return { error: error.message };
     return { error: null };
   }
@@ -110,6 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         signUp,
         signIn,
+        signInWithGoogle,
         signOut,
         deleteAccount,
         resetPassword,

@@ -673,6 +673,12 @@ body {
   font-weight: 800;
   border-radius: 20px;
 }
+.iconbtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
 .linklike {
   background: none;
   border: none;
