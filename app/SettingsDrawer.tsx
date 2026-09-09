@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "./auth-context";
 import { useTheme } from "./theme-context";
 import { useToast } from "./toast-context";
+import { useOnboarding } from "./onboarding-context";
 
 function LoginIcon() {
   return (
@@ -27,6 +28,15 @@ function PaletteIcon() {
       <circle cx="7.2" cy="12" r="1" />
       <circle cx="9" cy="8" r="1" />
       <circle cx="15" cy="8" r="1" />
+    </svg>
+  );
+}
+function GuideIcon() {
+  return (
+    <svg viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.5 9.2a2.5 2.5 0 014.9.6c0 1.8-2.4 2-2.4 3.7" />
+      <circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none" />
     </svg>
   );
 }
@@ -58,6 +68,7 @@ export default function SettingsDrawer({
   const { user, signOut, deleteAccount } = useAuth();
   const { openPicker } = useTheme();
   const { showToast } = useToast();
+  const { restart: restartOnboarding } = useOnboarding();
   const router = useRouter();
 
   const [confirming, setConfirming] = useState(false);
@@ -127,6 +138,16 @@ export default function SettingsDrawer({
         >
           <PaletteIcon />
           색 팔레트
+        </button>
+        <button
+          className="drow"
+          onClick={() => {
+            close();
+            restartOnboarding();
+          }}
+        >
+          <GuideIcon />
+          가이드 다시보기
         </button>
 
         {user && (

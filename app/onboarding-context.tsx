@@ -68,6 +68,7 @@ const OnboardingContext = createContext<{
   isLast: boolean;
   next: () => void;
   skip: () => void;
+  restart: () => void;
 } | null>(null);
 
 export function OnboardingProvider({ children }: { children: ReactNode }) {
@@ -129,6 +130,13 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     setStepIndex((i) => i + 1);
   }
 
+  // Forces the tour to start over, ignoring the "already seen" flag —
+  // used by the "가이드 다시보기" menu item.
+  function restart() {
+    setStepIndex(0);
+    setActive(true);
+  }
+
   return (
     <OnboardingContext.Provider
       value={{
@@ -138,6 +146,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
         isLast: stepIndex === ONBOARDING_STEPS.length - 1,
         next,
         skip: finish,
+        restart,
       }}
     >
       {children}
