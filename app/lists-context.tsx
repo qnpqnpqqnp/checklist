@@ -16,7 +16,13 @@ import { useToast } from "./toast-context";
 import { useAuth } from "./auth-context";
 import { useGroups, type Group } from "./groups-context";
 
-export type Item = { id: string; text: string; done: boolean; addedBy?: string };
+export type Item = {
+  id: string;
+  text: string;
+  done: boolean;
+  addedBy?: string;
+  dueDate?: string;
+};
 export type Period = { name: string; items: Item[] };
 export type ChecklistPeriodType = "none" | "weekly" | "daily";
 export type ChecklistList = {
@@ -78,7 +84,12 @@ const ListsContext = createContext<{
   ) => Promise<ChecklistList | null>;
   toggleItem: (listId: string, itemId: string) => Promise<void>;
   addItem: (listId: string, periodIndex: number, text: string) => Promise<void>;
-  updateItem: (listId: string, itemId: string, text: string) => Promise<void>;
+  updateItem: (
+    listId: string,
+    itemId: string,
+    text: string,
+    dueDate?: string
+  ) => Promise<void>;
   deleteItem: (listId: string, itemId: string) => Promise<void>;
   addPeriod: (listId: string, name: string) => Promise<void>;
   deleteList: (listId: string) => Promise<void>;
@@ -268,12 +279,19 @@ export function ListsProvider({ children }: { children: ReactNode }) {
     await persistPeriods(listId, periods);
   }
 
-  async function updateItem(listId: string, itemId: string, text: string) {
+  async function updateItem(
+    listId: string,
+    itemId: string,
+    text: string,
+    dueDate?: string
+  ) {
     const list = lists.find((l) => l.id === listId);
     if (!list) return;
     const periods = list.periods.map((p) => ({
       ...p,
-      items: p.items.map((i) => (i.id === itemId ? { ...i, text } : i)),
+      items: p.items.map((i) =>
+        i.id === itemId ? { ...i, text, dueDate } : i
+      ),
     }));
     await persistPeriods(listId, periods);
   }

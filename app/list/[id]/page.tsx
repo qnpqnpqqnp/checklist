@@ -6,6 +6,19 @@ import { useLists, stat } from "../../lists-context";
 import { useToast } from "../../toast-context";
 import AddPeriodSheet from "./AddPeriodSheet";
 
+function todayISO() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function formatDueDate(iso: string) {
+  const [, m, d] = iso.split("-");
+  return `${Number(m)}/${Number(d)}`;
+}
+
 export default function ListDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -26,6 +39,7 @@ export default function ListDetailPage() {
   const [newItemText, setNewItemText] = useState("");
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
+  const [editingDueDate, setEditingDueDate] = useState("");
   const [addPeriodOpen, setAddPeriodOpen] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -64,6 +78,7 @@ export default function ListDetailPage() {
   const safeWeek = curWeek < cur.periods.length ? curWeek : 0;
   const period = cur.periods[safeWeek];
   const [d, t] = stat(cur);
+  const today = todayISO();
   const pct = t ? Math.round((d / t) * 100) : 0;
   const showTabs = !(cur.pt === "none" && cur.periods.length === 1 && !editMode);
   const nextPeriodName = `${cur.periods.length + 1}${cur.pt === "daily" ? "일차" : "주차"}`;
@@ -83,16 +98,17 @@ export default function ListDetailPage() {
     setNewItemText("");
   }
 
-  function startEditingItem(itemId: string, text: string) {
+  function startEditingItem(itemId: string, text: string, dueDate?: string) {
     setEditingItemId(itemId);
     setEditingText(text);
+    setEditingDueDate(dueDate ?? "");
   }
 
-  async function commitItemEdit(itemId: string, text: string) {
+  async function commitItemEdit(itemId: string, text: string, dueDate: string) {
     const trimmed = text.trim();
     setEditingItemId(null);
     if (!trimmed) return;
-    await updateItem(cur!.id, itemId, trimmed);
+    await updateItem(cur!.id, itemId, trimmed, dueDate || undefined);
   }
 
   function cancelItemEdit() {
@@ -180,29 +196,55 @@ export default function ListDetailPage() {
           {period.items.length ? (
             period.items.map((it) =>
               editingItemId === it.id ? (
-                <div key={it.id} className="item-row">
-                  <input
-                    className="item-edit"
-                    autoFocus
-                    value={editingText}
-                    onChange={(e) => setEditingText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        commitItemEdit(it.id, editingText);
-                      } else if (e.key === "Escape") {
-                        e.preventDefault();
-                        cancelItemEdit();
-                      }
-                    }}
-                    onBlur={() => {
-                      if (skipBlurSaveRef.current) {
-                        skipBlurSaveRef.current = false;
-                        return;
-                      }
-                      commitItemEdit(it.id, editingText);
-                    }}
-                  />
+                <div
+                  key={it.id}
+                  className="item-row"
+                  onBlur={(e) => {
+                    if (skipBlurSaveRef.current) {
+                      skipBlurSaveRef.current = false;
+                      return;
+                    }
+                    if (
+                      e.relatedTarget &&
+                      e.currentTarget.contains(e.relatedTarget as Node)
+                    ) {
+                      return;
+                    }
+                    commitItemEdit(it.id, editingText, editingDueDate);
+                  }}
+                >
+                  <div className="item-edit-fields">
+                    <input
+                      className="item-edit"
+                      autoFocus
+                      value={editingText}
+                      onChange={(e) => setEditingText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          commitItemEdit(it.id, editingText, editingDueDate);
+                        } else if (e.key === "Escape") {
+                          e.preventDefault();
+                          cancelItemEdit();
+                        }
+                      }}
+                    />
+                    <input
+                      type="date"
+                      className="item-edit-date"
+                      value={editingDueDate}
+                      onChange={(e) => setEditingDueDate(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          commitItemEdit(it.id, editingText, editingDueDate);
+                        } else if (e.key === "Escape") {
+                          e.preventDefault();
+                          cancelItemEdit();
+                        }
+                      }}
+                    />
+                  </div>
                 </div>
               ) : (
                 <div key={it.id} className="item-row">
@@ -219,13 +261,26 @@ export default function ListDetailPage() {
                     {cur.groupId && it.addedBy && (
                       <span className="badge">{it.addedBy}</span>
                     )}
+                    {it.dueDate && (
+                      <span
+                        className={`due${
+                          it.dueDate === today
+                            ? " today"
+                            : it.dueDate < today
+                            ? " overdue"
+                            : ""
+                        }`}
+                      >
+                        {formatDueDate(it.dueDate)}
+                      </span>
+                    )}
                     {editMode && <span className="del">×</span>}
                   </button>
                   <button
                     className="edit-btn"
                     onClick={(e) => {
                       e.stopPropagation();
-                      startEditingItem(it.id, it.text);
+                      startEditingItem(it.id, it.text, it.dueDate);
                     }}
                     aria-label="항목 수정"
                   >
