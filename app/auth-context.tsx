@@ -20,6 +20,8 @@ const AuthContext = createContext<{
   signIn: (email: string, password: string) => Promise<AuthResult>;
   signOut: () => Promise<void>;
   deleteAccount: () => Promise<{ error: string | null }>;
+  resetPassword: (email: string) => Promise<AuthResult>;
+  updatePassword: (newPassword: string) => Promise<AuthResult>;
 } | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -67,6 +69,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   }
 
+  async function resetPassword(email: string): Promise<AuthResult> {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) return { error: error.message };
+    return { error: null };
+  }
+
+  async function updatePassword(newPassword: string): Promise<AuthResult> {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) return { error: error.message };
+    return { error: null };
+  }
+
   async function deleteAccount(): Promise<{ error: string | null }> {
     const { data } = await supabase.auth.getSession();
     const token = data.session?.access_token;
@@ -89,7 +105,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, signUp, signIn, signOut, deleteAccount }}
+      value={{
+        user,
+        loading,
+        signUp,
+        signIn,
+        signOut,
+        deleteAccount,
+        resetPassword,
+        updatePassword,
+      }}
     >
       {children}
     </AuthContext.Provider>

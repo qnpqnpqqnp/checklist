@@ -673,6 +673,17 @@ body {
   font-weight: 800;
   border-radius: 20px;
 }
+.linklike {
+  background: none;
+  border: none;
+  padding: 4px;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--violet);
+  text-align: center;
+  cursor: pointer;
+}
 
 /* 폼 */
 .form {

@@ -6,12 +6,14 @@ import { useAuth } from "../auth-context";
 import { useToast } from "../toast-context";
 
 export default function LoginPage() {
-  const { user, signUp, signIn, signOut } = useAuth();
+  const { user, signUp, signIn, signOut, resetPassword } = useAuth();
   const { showToast } = useToast();
   const router = useRouter();
 
+  const [mode, setMode] = useState<"signin" | "reset">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [resetEmail, setResetEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSignUp() {
@@ -50,6 +52,22 @@ export default function LoginPage() {
     router.push("/");
   }
 
+  async function handleResetPassword() {
+    if (!resetEmail.trim()) {
+      showToast("이메일을 입력해 주세요");
+      return;
+    }
+    setSubmitting(true);
+    const { error } = await resetPassword(resetEmail.trim());
+    setSubmitting(false);
+    if (error) {
+      showToast(error);
+      return;
+    }
+    showToast("재설정 링크를 이메일로 보냈어요");
+    setMode("signin");
+  }
+
   if (user) {
     return (
       <>
@@ -73,6 +91,49 @@ export default function LoginPage() {
             <button className="clay btn" onClick={() => router.push("/")}>
               홈으로
             </button>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (mode === "reset") {
+    return (
+      <>
+        <div className="top">
+          <h1>비밀번호 재설정</h1>
+        </div>
+        <div className="scroll">
+          <div className="form">
+            <div className="field">
+              <label htmlFor="l3">이메일</label>
+              <input
+                id="l3"
+                type="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+              />
+            </div>
+            <button
+              className="clay btn"
+              onClick={handleResetPassword}
+              disabled={submitting}
+            >
+              재설정 링크 보내기
+            </button>
+            <button
+              type="button"
+              className="linklike"
+              onClick={() => setMode("signin")}
+            >
+              로그인으로 돌아가기
+            </button>
+            <p className="note">
+              가입할 때 쓴 이메일 주소로 비밀번호를 재설정할 수 있는 링크를
+              보내드려요.
+            </p>
           </div>
         </div>
       </>
@@ -117,6 +178,13 @@ export default function LoginPage() {
             disabled={submitting}
           >
             가입
+          </button>
+          <button
+            type="button"
+            className="linklike"
+            onClick={() => setMode("reset")}
+          >
+            비밀번호를 잊으셨나요?
           </button>
           <p className="note">
             로그인은 선택 사항이에요. 로그인 없이 만든 체크리스트는 로그인하는
