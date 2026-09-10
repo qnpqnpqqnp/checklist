@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useLists, stat } from "../../lists-context";
 import { useToast } from "../../toast-context";
@@ -44,6 +44,16 @@ export default function ListDetailPage() {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const skipBlurSaveRef = useRef(false);
+  const editInputRef = useRef<HTMLInputElement>(null);
+
+  // 편집 행이 화면 아래쪽에 있을 때 autoFocus가 브라우저의 자동
+  // scrollIntoView를 유발해 상단(진행률/주차 탭)이 밀려나므로,
+  // preventScroll 옵션으로 직접 포커스를 준다.
+  useEffect(() => {
+    if (editingItemId) {
+      editInputRef.current?.focus({ preventScroll: true });
+    }
+  }, [editingItemId]);
 
   const cur = lists.find((l) => l.id === params.id);
 
@@ -215,8 +225,8 @@ export default function ListDetailPage() {
                 >
                   <div className="item-edit-fields">
                     <input
+                      ref={editInputRef}
                       className="item-edit"
-                      autoFocus
                       value={editingText}
                       onChange={(e) => setEditingText(e.target.value)}
                       onKeyDown={(e) => {
