@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# generated per build (see scripts/stamp-sw.mjs)
+/app/sw-version.generated.ts
