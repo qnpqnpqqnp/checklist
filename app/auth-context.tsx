@@ -10,6 +10,10 @@ import {
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { withTimeout } from "@/lib/with-timeout";
+import {
+  clearOAuthPending,
+  markOAuthPending,
+} from "@/lib/oauth-pending";
 
 type AuthResult = { error: string | null; needsEmailConfirm?: boolean };
 
@@ -45,6 +49,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       });
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      // The OAuth round-trip is over once a session lands — let
+      // ServiceWorkerRegister resume normal update reloads.
+      if (session) clearOAuthPending();
       setUser(session?.user ?? null);
       setLoading(false);
     });
@@ -67,6 +74,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signInWithGoogle(): Promise<{ error: string | null }> {
+    // Tell ServiceWorkerRegister to hold off on any update reload until the
+    // redirect round-trip completes. Set before the call so it's in place
+    // by the time supabase-js navigates the tab to Google.
+    markOAuthPending();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/` },
@@ -74,11 +85,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // On success the browser is already navigating away to Google, so
     // there's nothing to return to — this only ever resolves when
     // signInWithOAuth failed before redirecting (e.g. provider disabled).
-    if (error) return { error: error.message };
+    if (error) {
+      clearOAuthPending();
+      return { error: error.message };
+    }
     return { error: null };
   }
 
   async function signOut() {
+    clearOAuthPending();
     await supabase.auth.signOut();
   }
 

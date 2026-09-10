@@ -33,6 +33,19 @@ self.addEventListener("fetch", (event) => {
   // it to the browser.
   if (request.cache === "only-if-cached") return;
 
+  // Auth-callback navigations (OAuth / magic link / password recovery) come
+  // back with a one-time code in the query. Don't touch these at all — let
+  // the browser deliver the document so the client can finish the exchange
+  // without any interference from this worker.
+  const url = new URL(request.url);
+  if (
+    url.searchParams.has("code") ||
+    url.searchParams.has("error") ||
+    url.searchParams.has("state")
+  ) {
+    return;
+  }
+
   // Always fetch the document bypassing the HTTP cache, so a reopened app
   // never renders a stale HTML shell that points at an old build. No
   // offline fallback (this worker holds no cache) — same as before.
